@@ -1,0 +1,41 @@
+/.env.local
+node_modules
+
+# Python environment
+venv/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# IDE files
+.vscode/
+.idea/
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Model files and large downloads
+*.gguf
+*.safetensors
+*.onnx
+*.pt
+*.pth
+
+# PaddleOCR model cache
+.paddlex/
+
+# Generated output
+.next/
+*.tsbuildinfo
+output/
+uploads/
+temp/

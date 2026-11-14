@@ -39,3 +39,9 @@ __pycache__/
 output/
 uploads/
 temp/
+
+# Test mocks
+mocks/
+
+# External skills
+ui-ux-pro-max-skill/

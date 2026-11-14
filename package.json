@@ -7,7 +7,10 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "mock:status": "node mocks/mock-db.mjs status",
+    "mock:clean": "node mocks/mock-db.mjs clean",
+    "mock:clean-all": "node mocks/mock-db.mjs clean-all"
   },
   "dependencies": {
     "dotenv": "17.3.1",
@@ -18,7 +21,7 @@
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "sharp": "^0.35.5",
-    "zod": "^4.6.7"
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.1.17",

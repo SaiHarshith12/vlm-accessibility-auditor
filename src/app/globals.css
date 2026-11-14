@@ -1,42 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #0a0c10;
-  --color-panel: #10131a;
-  --color-panel2: #151923;
+  --font-sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+
+  /* Obsidian depth system */
+  --color-ink: #06080c;
+  --color-ink-950: #040508;
+  --color-ink-900: #090c13;
+  --color-ink-800: #0f1420;
+  
+  --color-surface-0: #090d15;
+  --color-surface-1: #0f1523;
+  --color-surface-2: #151d30;
+  --color-surface-3: #1d273f;
+  --color-surface-highlight: #283654;
+
+  /* Tactical High-Voltage Amber Palette */
+  --color-brand: #f59e0b;
+  --color-brand-light: #fbbf24;
+  --color-brand-bright: #fde68a;
+  --color-brand-dark: #b45309;
+  --color-brand-glow: rgba(245, 158, 11, 0.16);
+
+  /* Functional Telemetry */
+  --color-pass: #10b981;
+  --color-pass-glow: rgba(16, 185, 129, 0.15);
+  --color-fail: #f43f5e;
+  --color-fail-glow: rgba(244, 63, 94, 0.15);
+  --color-warn: #f59e0b;
+  --color-info: #38bdf8;
+  --color-radar: #06b6d4;
+
+  /* Typography Colors */
+  --color-inktext: #e2e8f0;
+  --color-inkmuted: #94a3b8;
+  --color-inkdim: #64748b;
+
+  /* Technical Hairlines */
   --color-hairline: rgba(255, 255, 255, 0.08);
-  --color-inktext: #c8cfd9;
-  --color-inkdim: #79828f;
-  --color-brand: #f0b254;
-  --color-pass: #34d399;
-  --color-fail: #fb7185;
-  --color-warn: #fbbf24;
-  --color-info: #7dd3fc;
-  --font-sans: ui-sans-serif, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas,
-    monospace;
+  --color-hairline-light: rgba(255, 255, 255, 0.15);
+  --color-hairline-amber: rgba(245, 158, 11, 0.3);
 }
 
 html {
   color-scheme: dark;
+  scroll-behavior: smooth;
 }
 
 body {
-  background:
-    radial-gradient(1200px 600px at 85% -10%, rgba(240, 178, 84, 0.06), transparent 60%),
-    radial-gradient(1000px 500px at -10% 10%, rgba(125, 211, 252, 0.05), transparent 55%),
-    var(--color-ink);
-  min-height: 100vh;
+  background-color: var(--color-ink);
+  background-image: 
+    radial-gradient(ellipse 900px 500px at 50% -120px, rgba(245, 158, 11, 0.09), transparent 70%),
+    radial-gradient(ellipse 700px 400px at 90% 20%, rgba(6, 182, 212, 0.05), transparent 60%),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+  background-position: center top, center top, -1px -1px, -1px -1px;
 }
 
 ::selection {
-  background: rgba(240, 178, 84, 0.25);
+  background: rgba(245, 158, 11, 0.3);
+  color: #fff;
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+  scrollbar-color: rgba(245, 158, 11, 0.25) rgba(0, 0, 0, 0.2);
 }
 
 .tabular {
@@ -44,35 +75,52 @@ body {
   font-feature-settings: "tnum";
 }
 
-@keyframes rise {
-  from {
+/* Animations */
+@keyframes pulse-amber {
+  0%, 100% {
+    box-shadow: 0 0 15px -3px rgba(245, 158, 11, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 25px 0px rgba(245, 158, 11, 0.7);
+  }
+}
+
+.glow-amber {
+  animation: pulse-amber 3s infinite ease-in-out;
+}
+
+@keyframes sweep {
+  0% {
+    transform: translateY(-100%);
     opacity: 0;
-    transform: translateY(10px);
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(1000%);
+    opacity: 0;
+  }
+}
+
+.scanner-beam {
+  animation: sweep 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes radar-sweep {
+  from {
+    transform: rotate(0deg);
   }
   to {
-    opacity: 1;
-    transform: translateY(0);
+    transform: rotate(360deg);
   }
 }
 
-.rise {
-  animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.rise-1 { animation-delay: 0.04s; }
-.rise-2 { animation-delay: 0.1s; }
-.rise-3 { animation-delay: 0.16s; }
-.rise-4 { animation-delay: 0.22s; }
-
-@keyframes scan {
-  0% { top: 8%; opacity: 0; }
-  15% { opacity: 1; }
-  85% { opacity: 1; }
-  100% { top: 88%; opacity: 0; }
-}
-
-.scanline {
-  animation: scan 2.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+.radar-rotate {
+  animation: radar-sweep 6s linear infinite;
 }
 
 @keyframes blinkdot {
@@ -81,21 +129,67 @@ body {
 }
 
 .blink {
-  animation: blinkdot 1.4s ease-in-out infinite;
+  animation: blinkdot 1.2s ease-in-out infinite;
 }
 
-.panel {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.012));
+/* Panel surface tokens */
+.surface-card {
+  background: linear-gradient(180deg, rgba(21, 29, 48, 0.6) 0%, rgba(15, 21, 35, 0.8) 100%);
   border: 1px solid var(--color-hairline);
-  border-radius: 18px;
+  backdrop-filter: blur(12px);
+  border-radius: 14px;
+  position: relative;
 }
 
-.panel-hover {
-  transition: border-color 0.25s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
-    background 0.25s ease;
+.surface-card-hover {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.panel-hover:hover {
-  border-color: rgba(240, 178, 84, 0.35);
+.surface-card-hover:hover {
+  border-color: rgba(245, 158, 11, 0.4);
   transform: translateY(-2px);
+  box-shadow: 0 8px 30px -10px rgba(0, 0, 0, 0.6), 0 0 20px -5px rgba(245, 158, 11, 0.15);
+}
+
+/* Reticle brackets for technical HUD styling */
+.reticle-box {
+  position: relative;
+}
+
+.reticle-box::before,
+.reticle-box::after {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-color: rgba(245, 158, 11, 0.5);
+  pointer-events: none;
+  transition: border-color 0.2s ease;
+}
+
+.reticle-box::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+
+.reticle-box::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+}
+
+.reticle-box:hover::before,
+.reticle-box:hover::after {
+  border-color: #f59e0b;
+}
+
+/* Monospace telemetry tag */
+.telemetry-chip {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }

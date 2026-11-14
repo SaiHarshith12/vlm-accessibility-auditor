@@ -17,6 +17,12 @@ import {
   Trash2,
   UserRound,
   X,
+  Crosshair,
+  ShieldCheck,
+  Cpu,
+  AlertTriangle,
+  CheckCircle2,
+  Sparkles,
 } from "lucide-react";
 import type { ImageStats } from "@/lib/taxonomy";
 import {
@@ -28,8 +34,6 @@ import {
   SectionLabel,
   fmtDate,
 } from "@/components/ui";
-
-/* ------------------------------------------------------------------ */
 
 export interface WorkspaceAudit {
   id: string;
@@ -60,13 +64,17 @@ export interface WorkspaceFinding {
   createdAt: string;
 }
 
-const SEV_STROKE: Record<string, string> = {
-  critical: "#fb7185",
-  major: "#fbbf24",
-  minor: "#7dd3fc",
+const SEV_BORDER: Record<string, string> = {
+  critical: "border-l-rose-500",
+  major: "border-l-amber-400",
+  minor: "border-l-cyan-400",
 };
 
-/* ------------------------------------------------------------------ */
+const SEV_STROKE: Record<string, string> = {
+  critical: "#f43f5e",
+  major: "#f59e0b",
+  minor: "#06b6d4",
+};
 
 export function AuditWorkspace({
   audit,
@@ -112,7 +120,7 @@ export function AuditWorkspace({
         body: JSON.stringify({ status }),
       });
       if (!res.ok) {
-        setNotice("Verification failed — please retry.");
+        setNotice("Verification update failed — please retry.");
         return;
       }
       setNotice("");
@@ -131,13 +139,13 @@ export function AuditWorkspace({
     try {
       const res = await fetch(`/api/audits/${audit.id}/reanalyze`, { method: "POST" });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "failed");
+      if (!res.ok) throw new Error(json.error ?? "Failed");
       setNotice(
-        `Re-analyzed with ${json.analyzer === "qwen-vl" ? "Qwen-VL" : "the heuristic engine"} · ${json.added} pending finding${json.added === 1 ? "" : "s"} added. Verified verdicts were preserved.`,
+        `Re-analyzed with ${json.analyzer === "qwen-vl" ? "Qwen-VL model" : "deterministic heuristic engine"}. ${json.added} candidate finding(s) refreshed. Existing verified ground-truth labels remained write-protected.`,
       );
       router.refresh();
     } catch {
-      setNotice("Re-analysis failed — image bytes may be unavailable.");
+      setNotice("Re-analysis failed — source image bytes may be unreachable.");
     } finally {
       setActing(null);
     }
@@ -146,7 +154,7 @@ export function AuditWorkspace({
   const destroy = async () => {
     if (
       !window.confirm(
-        `Delete “${audit.title}” and all of its findings? This also removes its labels from the evaluation set.`,
+        `Permanently delete "${audit.title}" and its associated verification records?`,
       )
     )
       return;
@@ -161,100 +169,117 @@ export function AuditWorkspace({
   };
 
   return (
-    <main className="mx-auto max-w-7xl px-6 pb-20">
-      {/* header */}
-      <div className="rise flex flex-wrap items-start justify-between gap-4 py-8">
+    <main className="mx-auto max-w-7xl px-4 sm:px-6 pb-24">
+      {/* ── TOP HEADER & ACTIONS ── */}
+      <div className="flex flex-wrap items-start justify-between gap-4 py-8 border-b border-hairline/80">
         <div className="min-w-0">
           <Link
             href="/#queue"
-            className="mb-3 inline-flex items-center gap-1.5 text-[12px] font-medium text-inkdim transition hover:text-white"
+            className="mb-2.5 inline-flex items-center gap-1.5 font-mono text-[11.5px] font-medium text-inkdim transition hover:text-brand"
           >
-            <ArrowLeft size={13} /> Audit queue
+            <ArrowLeft size={13} />
+            <span>RETURN TO INSPECTION QUEUE</span>
           </Link>
-          <h1 className="text-[26px] font-semibold leading-tight tracking-tight text-white">
-            {audit.title}
+
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-mono flex items-center gap-3">
+            <span>{audit.title}</span>
           </h1>
+
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-md bg-white/[0.05] px-2 py-1 text-[11px] font-medium text-inktext ring-1 ring-hairline">
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-hairline bg-surface-1 px-2.5 py-1 font-mono text-[11px] font-medium text-inktext">
               {audit.kind === "poster" ? (
-                <Presentation size={12} />
+                <Presentation size={13} className="text-brand" />
               ) : (
-                <MonitorSmartphone size={12} />
+                <MonitorSmartphone size={13} className="text-cyan-400" />
               )}
-              {audit.kind === "poster" ? "Campus poster" : "UI screenshot"}
+              {audit.kind === "poster" ? "Campus Poster" : "UI Screen"}
             </span>
+
             <AnalyzerChip analyzer={audit.analyzer} online={vlmOnline} />
-            <span className="tabular rounded-md bg-white/[0.05] px-2 py-1 text-[11px] text-inkdim ring-1 ring-hairline">
+
+            <span className="tabular rounded-md border border-hairline bg-surface-1 px-2.5 py-1 font-mono text-[11px] text-inkdim">
               {fmtDate(audit.createdAt)}
               {audit.width ? ` · ${audit.width}×${audit.height}px` : ""}
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+
+        {/* Action Controls */}
+        <div className="flex items-center gap-2 font-mono text-[12px]">
           <button
             onClick={reanalyze}
             disabled={acting !== null}
-            className="inline-flex items-center gap-2 rounded-xl border border-hairline bg-white/[0.03] px-3.5 py-2 text-[12px] font-medium text-inktext transition hover:border-white/20 hover:text-white disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-xl border border-hairline bg-surface-1 px-3.5 py-2 font-semibold text-white transition hover:border-brand/40 hover:bg-surface-2 disabled:opacity-50"
           >
             {acting === "reanalyze" ? (
-              <Loader2 size={14} className="animate-spin" />
+              <Loader2 size={14} className="animate-spin text-brand" />
             ) : (
-              <RefreshCw size={14} />
+              <RefreshCw size={14} className="text-brand" />
             )}
-            Re-run analysis
+            <span>Re-Run Vision Model</span>
           </button>
           <button
             onClick={destroy}
             disabled={acting !== null}
-            className="inline-flex items-center gap-2 rounded-xl border border-fail/25 bg-fail/[0.06] px-3.5 py-2 text-[12px] font-medium text-fail transition hover:bg-fail/[0.12] disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-rose-500/30 bg-rose-500/[0.08] px-3.5 py-2 font-semibold text-rose-300 transition hover:bg-rose-500/20 disabled:opacity-50"
           >
             {acting === "delete" ? (
               <Loader2 size={14} className="animate-spin" />
             ) : (
               <Trash2 size={14} />
             )}
-            Delete
+            <span>Delete</span>
           </button>
         </div>
       </div>
 
       {notice && (
-        <p className="rise mb-4 rounded-xl border border-hairline bg-white/[0.03] px-4 py-2.5 text-[12px] text-inktext">
-          {notice}
-        </p>
+        <div className="my-4 rounded-xl border border-brand/40 bg-brand/[0.08] px-4 py-3 font-mono text-[12px] text-brand-bright flex items-center justify-between">
+          <span>{notice}</span>
+          <button onClick={() => setNotice("")} className="text-brand hover:text-white">
+            <X size={14} />
+          </button>
+        </div>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_440px]">
-        {/* ────────────────────────── image column */}
-        <div className="rise rise-1">
-          <div className="panel overflow-hidden">
-            <div className="flex items-center justify-between border-b border-hairline px-4 py-2.5">
-              <SectionLabel>Annotated artifact</SectionLabel>
-              <div className="flex items-center gap-1.5">
-                <span className="mr-1 text-[10px] text-inkdim">
-                  {findings.filter((f) => f.bbox).length} regions
-                </span>
+      {/* ── SPLIT VIEWPORT & FINDINGS ── */}
+      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_460px]">
+        {/* Left: Viewport and Pixel Stats */}
+        <div className="space-y-4">
+          <div className="surface-card overflow-hidden">
+            <div className="flex items-center justify-between border-b border-hairline bg-surface-0/90 px-4 py-3">
+              <div className="flex items-center gap-2">
+                <SectionLabel badge={`${findings.filter((f) => f.bbox).length} REGIONS`}>
+                  Annotated Viewport
+                </SectionLabel>
+              </div>
+
+              <div className="flex items-center gap-2 font-mono">
                 <button
                   onClick={() => setShowOverlay((v) => !v)}
-                  className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium ring-1 transition ${
+                  className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-semibold border transition ${
                     showOverlay
-                      ? "bg-brand/15 text-brand ring-brand/30"
-                      : "bg-white/[0.04] text-inkdim ring-hairline hover:text-white"
+                      ? "border-brand/40 bg-brand/15 text-brand shadow-[0_0_10px_rgba(245,158,11,0.3)]"
+                      : "border-hairline bg-surface-1 text-inkdim hover:text-white"
                   }`}
                 >
-                  <Layers size={12} />
-                  {showOverlay ? "Overlays on" : "Overlays off"}
+                  <Layers size={13} />
+                  <span>{showOverlay ? "Overlays Active" : "Overlays Hidden"}</span>
                 </button>
               </div>
             </div>
-            <div className="grid max-h-[74vh] place-items-center overflow-auto bg-ink/60 p-4">
-              <figure className="relative inline-block">
+
+            {/* Canvas Area */}
+            <div className="relative grid max-h-[76vh] place-items-center overflow-auto bg-ink-950/95 p-4 select-none">
+              <figure className="relative inline-block rounded-lg overflow-hidden border border-hairline/80 shadow-2xl">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={audit.imageSrc}
                   alt={audit.title}
-                  className="block max-h-[68vh] max-w-full rounded-lg"
+                  className="block max-h-[70vh] max-w-full"
                 />
+
+                {/* SVG Bounding Boxes Overlay */}
                 {showOverlay && (
                   <svg
                     viewBox="0 0 1 1"
@@ -269,31 +294,31 @@ export function AuditWorkspace({
                         const dim = selectedId && !active;
                         const color =
                           f.source === "human"
-                            ? "#c4b5fd"
-                            : SEV_STROKE[f.severity] ?? "#7dd3fc";
+                            ? "#a78bfa"
+                            : SEV_STROKE[f.severity] ?? "#38bdf8";
+
                         return (
-                          <g key={f.id} opacity={dim ? 0.18 : 1}>
+                          <g key={f.id} opacity={dim ? 0.22 : 1}>
                             <rect
                               x={b.x}
                               y={b.y}
                               width={b.w}
                               height={b.h}
                               fill={color}
-                              fillOpacity={active ? 0.16 : 0.05}
+                              fillOpacity={active ? 0.22 : 0.08}
                               stroke={color}
                               strokeWidth={active ? 3 : 1.5}
                               vectorEffect="non-scaling-stroke"
-                              strokeDasharray={
-                                f.source === "human" ? "5 4" : undefined
-                              }
-                              rx={0.004}
+                              strokeDasharray={f.source === "human" ? "4 3" : undefined}
+                              rx={0.003}
                             />
                           </g>
                         );
                       })}
                   </svg>
                 )}
-                {/* click targets (HTML so we keep pointer events) */}
+
+                {/* Click Targets */}
                 {showOverlay &&
                   findings
                     .filter((f) => f.bbox)
@@ -318,44 +343,51 @@ export function AuditWorkspace({
             </div>
           </div>
 
-          {/* evidence strip */}
+          {/* Measured Pixel Forensics Strip */}
           {audit.stats && (
-            <div className="panel mt-3 p-5">
-              <SectionLabel>Measured evidence (pixel analysis)</SectionLabel>
-              <div className="tabular mt-4 grid grid-cols-3 gap-x-4 gap-y-5 sm:grid-cols-6">
+            <div className="surface-card p-5">
+              <SectionLabel badge="PIXEL ENGINE">Measured Ground-Truth Evidence</SectionLabel>
+              <div className="tabular font-mono mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
                 {[
                   {
-                    k: "Mean luminance",
+                    k: "Luminance",
                     v: `${Math.round(audit.stats.meanLum * 100)}%`,
+                    sub: "Mean Intensity",
                   },
                   {
-                    k: "Tonal range p10–p90",
+                    k: "Tonal Range",
                     v: `${audit.stats.tonalRangeRatio.toFixed(1)}:1`,
+                    sub: "p10–p90 spread",
                   },
                   {
                     k: "Colorfulness",
                     v: audit.stats.colorfulness.toFixed(2),
+                    sub: "Hasler-Süsstrunk",
                   },
                   {
-                    k: "Edge density",
+                    k: "Edge Density",
                     v: audit.stats.edgeDensity.toFixed(3),
+                    sub: "Sobel Gradient",
                   },
                   {
-                    k: "Dark pixels",
+                    k: "Dark Pixels",
                     v: `${Math.round(audit.stats.darkPixelPct * 100)}%`,
+                    sub: "Lum < 0.15",
                   },
                   {
-                    k: "Red / green share",
+                    k: "Red/Green Share",
                     v: `${Math.round(audit.stats.redShare * 100)}% / ${Math.round(
                       audit.stats.greenShare * 100,
                     )}%`,
+                    sub: "Deuteranopia",
                   },
                 ].map((s) => (
-                  <div key={s.k}>
-                    <p className="text-[15px] font-semibold text-white">{s.v}</p>
-                    <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-inkdim">
+                  <div key={s.k} className="rounded-lg border border-hairline/60 bg-surface-0/60 p-2.5">
+                    <p className="text-[10px] uppercase text-inkdim tracking-wider font-semibold">
                       {s.k}
                     </p>
+                    <p className="mt-1 text-[16px] font-bold text-white">{s.v}</p>
+                    <p className="text-[9px] text-brand-light/70">{s.sub}</p>
                   </div>
                 ))}
               </div>
@@ -363,168 +395,179 @@ export function AuditWorkspace({
           )}
         </div>
 
-        {/* ────────────────────────── findings column */}
-        <div className="rise rise-2" ref={listRef}>
-          <div className="panel flex items-center justify-between px-5 py-3.5">
-            <SectionLabel>
-              Findings · {findings.length}
-            </SectionLabel>
-            <div className="tabular flex gap-3 text-[11px]">
-              <span className="text-pass">{counts.confirmed} TP</span>
-              <span className="text-fail">{counts.rejected} FP</span>
-              <span className="text-warn">{counts.pending} pending</span>
-              {counts.uncertain > 0 && (
-                <span className="text-inkdim">{counts.uncertain}? unsure</span>
-              )}
+        {/* Right: Findings Adjudication Panel */}
+        <div className="space-y-4" ref={listRef}>
+          {/* Adjudication Status Bar */}
+          <div className="surface-card flex items-center justify-between px-4 py-3">
+            <SectionLabel badge={`${findings.length} TOTAL`}>Candidate Findings</SectionLabel>
+            <div className="tabular font-mono flex items-center gap-2.5 text-[11px]">
+              <span className="text-emerald-400 font-bold">{counts.confirmed} TP</span>
+              <span className="text-rose-400 font-bold">{counts.rejected} FP</span>
+              <span className="text-amber-400 font-bold">{counts.pending} In Queue</span>
             </div>
           </div>
 
-          <div className="mt-3 space-y-3">
+          {/* Finding Cards List */}
+          <div className="space-y-3">
             {findings.length === 0 && (
-              <div className="panel p-8 text-center">
-                <p className="text-[14px] font-medium text-white">
-                  No issues detected
-                </p>
-                <p className="mt-1.5 text-[12px] leading-relaxed text-inkdim">
-                  The analyzer found no candidate issues. If you spot one it
-                  missed, add it below — that counts as a false negative and
-                  keeps recall honest.
+              <div className="surface-card p-8 text-center font-mono">
+                <CheckCircle2 size={28} className="mx-auto text-emerald-400 mb-2" />
+                <p className="text-[14px] font-bold text-white">No Issues Detected</p>
+                <p className="mt-1 text-[12px] text-inkdim leading-relaxed">
+                  Both models reported 0 candidate defects. If you spot a violation they missed, report it below to register a False Negative.
                 </p>
               </div>
             )}
+
             {findings.map((f, i) => {
               const active = selectedId === f.id;
               const busy = busyIds.has(f.id);
               const human = f.source === "human";
+              const borderCls = SEV_BORDER[f.severity] || "border-l-brand";
+
               return (
                 <article
                   key={f.id}
-                  onMouseEnter={() => setSelectedId(f.id)}
-                  className={`panel panel-hover cursor-pointer p-5 ${
-                    active ? "border-brand/40" : ""
-                  }`}
                   onClick={() => select(f.id)}
+                  className={`surface-card p-5 cursor-pointer border-l-4 transition-all ${borderCls} ${
+                    active
+                      ? "ring-2 ring-brand/50 bg-surface-1 shadow-[0_0_20px_rgba(245,158,11,0.15)]"
+                      : "hover:border-hairline-bright"
+                  }`}
                 >
+                  {/* Card Header */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="tabular text-[11px] font-semibold text-inkdim">
+                      <span className="tabular font-mono text-[11px] font-bold text-inkdim">
                         #{String(i + 1).padStart(2, "0")}
                       </span>
                       <SeverityBadge severity={f.severity} />
                       <CategoryChip category={f.category} />
                       {human && (
-                        <span className="inline-flex items-center gap-1 rounded-full border border-violet-300/30 bg-violet-300/[0.08] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-violet-300">
-                          <UserRound size={10} /> Human-added
+                        <span className="inline-flex items-center gap-1 rounded bg-violet-400/10 border border-violet-400/30 px-2 py-0.5 font-mono text-[10px] text-violet-300">
+                          <UserRound size={11} /> Human Ground Truth
                         </span>
                       )}
                     </div>
                     <StatusBadge status={f.status} />
                   </div>
 
-                  <h3 className="mt-3 text-[14.5px] font-semibold leading-snug text-white">
+                  {/* Finding Title */}
+                  <h3 className="mt-2.5 font-mono text-[14px] font-bold leading-snug text-white">
                     {f.title}
                   </h3>
 
-                  <div className="mt-3 space-y-3 text-[12.5px] leading-relaxed">
-                    <div>
-                      <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-inkdim">
-                        Why it matters
+                  {/* Reasoning & Suggestion Box */}
+                  <div className="mt-3 space-y-2.5 text-[12.5px] leading-relaxed">
+                    <p className="text-inktext/85">{f.explanation}</p>
+                    <div className="rounded-lg border border-brand/20 bg-brand/[0.06] p-3">
+                      <p className="mb-0.5 font-mono text-[9.5px] font-bold uppercase tracking-wider text-brand">
+                        Suggested Remediation
                       </p>
-                      <p className="text-inktext/85">{f.explanation}</p>
-                    </div>
-                    <div className="rounded-lg border border-brand/15 bg-brand/[0.05] p-3">
-                      <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-brand">
-                        Suggested fix
-                      </p>
-                      <p className="text-inktext/90">{f.suggestion}</p>
+                      <p className="text-brand-bright/90 font-medium text-[12px]">{f.suggestion}</p>
                     </div>
                   </div>
 
-                  <div className="mt-3.5 flex flex-wrap items-center gap-x-4 gap-y-2">
-                    {f.wcag && (
-                      <span className="rounded-md bg-white/[0.05] px-2 py-0.5 font-mono text-[10.5px] text-info ring-1 ring-hairline">
-                        WCAG {f.wcag}
-                      </span>
-                    )}
-                    {!human && (
-                      <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.14em] text-inkdim">
-                        confidence <ConfidenceMeter value={f.confidence} />
-                      </span>
-                    )}
+                  {/* Technical Footer */}
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-hairline/60 pt-3 font-mono text-[10.5px]">
+                    <div className="flex items-center gap-3">
+                      {f.wcag && (
+                        <span className="rounded bg-surface-2 px-1.5 py-0.5 text-cyan-300 border border-cyan-400/30">
+                          WCAG {f.wcag}
+                        </span>
+                      )}
+                      {!human && <ConfidenceMeter value={f.confidence} />}
+                    </div>
+
                     {f.verifiedBy && (
-                      <span className="text-[10.5px] text-inkdim">
-                        verified by {f.verifiedBy}
+                      <span className="text-inkdim text-[10px]">
+                        adjudicated by {f.verifiedBy}
                       </span>
                     )}
                   </div>
 
-                  {/* verification controls */}
+                  {/* Adjudication Buttons */}
                   <div
-                    className="mt-4 flex items-center gap-1.5 border-t border-hairline pt-3.5"
+                    className="mt-3.5 flex flex-wrap items-center gap-2 border-t border-hairline/60 pt-3"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <span className="mr-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-inkdim">
-                      {human ? "Ground truth" : "Verify"}
+                    <span className="font-mono text-[10px] uppercase font-bold text-inkdim tracking-wider mr-1">
+                      {human ? "Ground Truth" : "Adjudicate:"}
                     </span>
+
                     {!human && (
                       <>
-                        <VerifyButton
-                          label="Correct"
-                          icon={<Check size={13} />}
-                          active={f.status === "confirmed"}
-                          tone="pass"
-                          disabled={busy}
+                        <button
                           onClick={() => verify(f, "confirmed")}
-                        />
-                        <VerifyButton
-                          label="False alarm"
-                          icon={<X size={13} />}
-                          active={f.status === "rejected"}
-                          tone="fail"
                           disabled={busy}
+                          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-mono text-[11px] font-bold transition border ${
+                            f.status === "confirmed"
+                              ? "bg-emerald-500 text-ink-950 border-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.5)]"
+                              : "border-hairline bg-surface-2 text-inkdim hover:text-emerald-300 hover:border-emerald-500/40"
+                          }`}
+                        >
+                          <Check size={13} />
+                          <span>Correct (TP)</span>
+                        </button>
+
+                        <button
                           onClick={() => verify(f, "rejected")}
-                        />
-                        <VerifyButton
-                          label="Unsure"
-                          icon={<CircleHelp size={13} />}
-                          active={f.status === "uncertain"}
-                          tone="dim"
                           disabled={busy}
+                          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-mono text-[11px] font-bold transition border ${
+                            f.status === "rejected"
+                              ? "bg-rose-500 text-white border-rose-400 shadow-[0_0_12px_rgba(244,63,94,0.5)]"
+                              : "border-hairline bg-surface-2 text-inkdim hover:text-rose-300 hover:border-rose-500/40"
+                          }`}
+                        >
+                          <X size={13} />
+                          <span>False Alarm (FP)</span>
+                        </button>
+
+                        <button
                           onClick={() => verify(f, "uncertain")}
-                        />
+                          disabled={busy}
+                          className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 font-mono text-[11px] font-medium transition border ${
+                            f.status === "uncertain"
+                              ? "bg-surface-3 text-white border-white/30"
+                              : "border-hairline bg-surface-2 text-inkdim hover:text-white"
+                          }`}
+                        >
+                          <CircleHelp size={12} />
+                          <span>Unsure</span>
+                        </button>
                       </>
                     )}
-                    <span className="ml-auto flex items-center gap-1">
-                      {busy && (
-                        <Loader2 size={13} className="animate-spin text-inkdim" />
-                      )}
+
+                    <div className="ml-auto flex items-center gap-1">
+                      {busy && <Loader2 size={13} className="animate-spin text-brand" />}
                       {f.status !== "pending" && !human && (
                         <button
-                          title="Reset to pending"
+                          title="Reset status back to pending"
                           disabled={busy}
                           onClick={() => verify(f, "pending")}
-                          className="grid h-7 w-7 place-items-center rounded-md text-inkdim ring-1 ring-hairline transition hover:text-white"
+                          className="grid h-7 w-7 place-items-center rounded-lg border border-hairline bg-surface-2 text-inkdim transition hover:text-white hover:border-brand/40"
                         >
                           <RotateCcw size={12} />
                         </button>
                       )}
                       {human && (
                         <button
-                          title="Remove this human-added note"
+                          title="Delete human finding"
                           disabled={busy}
                           onClick={() => removeFinding(f)}
-                          className="grid h-7 w-7 place-items-center rounded-md text-inkdim ring-1 ring-hairline transition hover:text-fail"
+                          className="grid h-7 w-7 place-items-center rounded-lg border border-hairline bg-surface-2 text-inkdim transition hover:text-rose-400 hover:border-rose-500/40"
                         >
                           <Trash2 size={12} />
                         </button>
                       )}
-                    </span>
+                    </div>
                   </div>
                 </article>
               );
             })}
           </div>
 
+          {/* Add Missed Issue (False Negative) */}
           <AddFindingForm auditId={audit.id} />
         </div>
       </div>
@@ -532,57 +575,15 @@ export function AuditWorkspace({
   );
 }
 
-/* ------------------------------------------------------------------ */
-
-function VerifyButton({
-  label,
-  icon,
-  active,
-  tone,
-  disabled,
-  onClick,
-}: {
-  label: string;
-  icon: React.ReactNode;
-  active: boolean;
-  tone: "pass" | "fail" | "dim";
-  disabled: boolean;
-  onClick: () => void;
-}) {
-  const tones = {
-    pass: active
-      ? "border-pass/50 bg-pass/15 text-pass"
-      : "border-hairline bg-white/[0.03] text-inkdim hover:border-pass/40 hover:text-pass",
-    fail: active
-      ? "border-fail/50 bg-fail/15 text-fail"
-      : "border-hairline bg-white/[0.03] text-inkdim hover:border-fail/40 hover:text-fail",
-    dim: active
-      ? "border-white/30 bg-white/[0.08] text-white"
-      : "border-hairline bg-white/[0.03] text-inkdim hover:border-white/25 hover:text-white",
-  } as const;
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition disabled:opacity-50 ${tones[tone]}`}
-    >
-      {icon}
-      {label}
-    </button>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-
 const CATEGORY_OPTIONS = [
-  ["contrast", "Low contrast"],
-  ["color", "Color reliance"],
-  ["typography", "Type & legibility"],
-  ["clutter", "Visual clutter"],
-  ["hierarchy", "Hierarchy"],
-  ["touch_target", "Target size"],
-  ["label", "Labels / alt text"],
-  ["other", "Other"],
+  ["contrast", "Low Contrast (1.4.3)"],
+  ["color", "Color Reliance (1.4.1)"],
+  ["typography", "Typography & Spacing (1.4.12)"],
+  ["clutter", "Visual Clutter & Crowding"],
+  ["hierarchy", "Heading & Visual Hierarchy"],
+  ["touch_target", "Touch Target Size (2.5.5)"],
+  ["label", "Labels & Accessible Text (3.3.2)"],
+  ["other", "Other WCAG Defect"],
 ] as const;
 
 function AddFindingForm({ auditId }: { auditId: string }) {
@@ -612,7 +613,7 @@ function AddFindingForm({ auditId }: { auditId: string }) {
         body: JSON.stringify({ auditId, ...form }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "failed");
+      if (!res.ok) throw new Error(json.error ?? "Submission failed");
       setForm({
         category: "contrast",
         severity: "major",
@@ -631,30 +632,28 @@ function AddFindingForm({ auditId }: { auditId: string }) {
   };
 
   const field =
-    "w-full rounded-lg border border-hairline bg-ink px-3 py-2 text-[12.5px] text-white placeholder:text-inkdim/60 outline-none transition focus:border-brand/50";
+    "w-full rounded-lg border border-hairline bg-surface-0 px-3 py-2 font-mono text-[12px] text-white placeholder:text-inkdim/60 outline-none transition focus:border-brand/70";
 
   return (
-    <div className="panel mt-3 p-5">
+    <div className="surface-card p-5">
       {!open ? (
         <button
           onClick={() => setOpen(true)}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 py-3 text-[12.5px] font-medium text-inkdim transition hover:border-brand/40 hover:text-brand"
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-hairline-bright py-3.5 font-mono text-[12px] font-semibold text-brand transition hover:border-brand hover:bg-brand/[0.05]"
         >
           <Plus size={14} />
-          Report an issue the model missed (adds a false negative)
+          <span>Report Missed Violation (Logs False Negative for Recall)</span>
         </button>
       ) : (
-        <div>
-          <div className="flex items-center justify-between">
-            <SectionLabel>Missed issue · counts as FN for recall</SectionLabel>
-            <button
-              onClick={() => setOpen(false)}
-              className="text-inkdim transition hover:text-white"
-            >
+        <div className="space-y-3">
+          <div className="flex items-center justify-between border-b border-hairline/60 pb-2">
+            <SectionLabel badge="GROUND TRUTH INPUT">Record Model Omission</SectionLabel>
+            <button onClick={() => setOpen(false)} className="text-inkdim hover:text-white">
               <X size={15} />
             </button>
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-2.5">
+
+          <div className="grid grid-cols-2 gap-2.5">
             <select
               value={form.category}
               onChange={(e) => set("category")(e.target.value)}
@@ -671,38 +670,44 @@ function AddFindingForm({ auditId }: { auditId: string }) {
               onChange={(e) => set("severity")(e.target.value)}
               className={field}
             >
-              <option value="critical">Critical</option>
-              <option value="major">Major</option>
-              <option value="minor">Minor</option>
+              <option value="critical">Critical Severity</option>
+              <option value="major">Major Severity</option>
+              <option value="minor">Minor Severity</option>
             </select>
           </div>
+
           <input
             value={form.title}
             onChange={(e) => set("title")(e.target.value)}
-            placeholder="Short title — what is wrong?"
-            className={`${field} mt-2.5`}
+            placeholder="Short Title (e.g., Unlabeled Schedule Table Header)"
+            className={field}
           />
+
           <textarea
             value={form.explanation}
             onChange={(e) => set("explanation")(e.target.value)}
-            placeholder="Explanation — what did you see, who is affected, which WCAG criterion?"
+            placeholder="Detailed Explanation: what was missed, who is affected, and what the model overlooked"
             rows={3}
-            className={`${field} mt-2.5 resize-none`}
+            className={`${field} resize-none`}
           />
+
           <textarea
             value={form.suggestion}
             onChange={(e) => set("suggestion")(e.target.value)}
-            placeholder="Suggested fix"
+            placeholder="Recommended Fix: exact visual or structural remediation"
             rows={2}
-            className={`${field} mt-2.5 resize-none`}
+            className={`${field} resize-none`}
           />
+
           <input
             value={form.wcag}
             onChange={(e) => set("wcag")(e.target.value)}
-            placeholder="WCAG criterion (optional, e.g. 1.1.1 Non-text Content)"
-            className={`${field} mt-2.5`}
+            placeholder="WCAG Criterion (e.g. 1.4.3 Contrast Minimum)"
+            className={field}
           />
-          {error && <p className="mt-2.5 text-[12px] text-fail">{error}</p>}
+
+          {error && <p className="font-mono text-[11.5px] text-rose-400">{error}</p>}
+
           <button
             onClick={submit}
             disabled={
@@ -711,10 +716,10 @@ function AddFindingForm({ auditId }: { auditId: string }) {
               form.explanation.trim().length < 5 ||
               form.suggestion.trim().length < 5
             }
-            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-[13px] font-semibold text-ink transition hover:bg-[#ffc46b] disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand to-amber-500 py-2.5 font-mono text-[12.5px] font-bold text-ink-950 shadow-[0_0_20px_-3px_rgba(245,158,11,0.5)] transition hover:brightness-110 disabled:opacity-40"
           >
             {sending ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
-            Add as ground-truth finding
+            <span>Commit Ground-Truth Finding</span>
           </button>
         </div>
       )}

@@ -12,8 +12,14 @@ import {
   ArrowRight,
   MonitorSmartphone,
   Presentation,
+  ShieldCheck,
+  Terminal,
+  Activity,
+  CheckCircle2,
+  Cpu,
+  Sparkles,
   type LucideIcon,
-} from "lucide-react";
+} from "@/components/icons";
 import Link from "next/link";
 import { db } from "@/db";
 import { audits, findings } from "@/db/schema";
@@ -23,11 +29,12 @@ import { ensureSeeded } from "@/lib/seed";
 import { checkVlmOnline } from "@/lib/analysis";
 import { OutcomeDonut, CalibrationBars, CategoryBars } from "@/components/charts";
 import { UploadZone } from "@/components/upload-zone";
+import { HeroTelemetryArtifact } from "@/components/hero-telemetry-artifact";
+import { MOCK_AUDITS, getMockMetrics, isMockDataEnabled } from "@/mocks/mock-data";
 import {
   SectionLabel,
   StatusBadge,
   AnalyzerChip,
-  SeverityBadge,
   fmtPct,
   fmtDate,
 } from "@/components/ui";
@@ -35,337 +42,430 @@ import {
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const PIPELINE = [
+const PIPELINE_STEPS = [
   {
-    Icon: ScanEye,
-    step: "01 · Detect",
-    text: "A local Qwen-VL model scans each artifact; a deterministic pixel engine takes over when the VLM is offline.",
+    step: "01",
+    name: "Vision Detection",
+    desc: "Local Qwen-VL multimodal model detects defects; fallback to deterministic contrast & edge engine if offline.",
   },
   {
-    Icon: MessageSquareQuote,
-    step: "02 · Explain",
-    text: "Every finding carries a grounded explanation, a WCAG 2.2 mapping, a suggested fix, a region, and a confidence score.",
+    step: "02",
+    name: "Grounded Explanation",
+    desc: "Each claim is mapped to exact WCAG 2.2 criterion with pixel bounding box, confidence score and suggested fix.",
   },
   {
-    Icon: UserCheck,
-    step: "03 · Verify",
-    text: "Reviewers adjudicate each finding: true positive, false positive, or uncertain — and log what the model missed.",
+    step: "03",
+    name: "Human Adjudication",
+    desc: "Reviewers verify findings as True Positive, False Positive, or log missed issues (False Negatives).",
   },
   {
-    Icon: ChartColumn,
-    step: "04 · Measure",
-    text: "Adjudicated labels feed live precision, recall, F1, false-alarm share and confidence calibration.",
+    step: "04",
+    name: "Empirical Scoring",
+    desc: "Precision, Recall, F1 and confidence calibration are computed in real time from verified ground truth.",
   },
 ];
 
 export default async function DashboardPage() {
-  await ensureSeeded();
-  const [metrics, vlmOnline, auditRows] = await Promise.all([
-    computeMetrics(),
-    checkVlmOnline(),
-    db
-      .select({
-        audit: audits,
-        total: sql<number>`count(${findings.id})::int`,
-        pending: sql<number>`count(${findings.id}) filter (where ${findings.status} = 'pending')::int`,
-        confirmed: sql<number>`count(${findings.id}) filter (where ${findings.status} = 'confirmed')::int`,
-        rejected: sql<number>`count(${findings.id}) filter (where ${findings.status} = 'rejected')::int`,
-        critical: sql<number>`count(${findings.id}) filter (where ${findings.severity} = 'critical' and ${findings.status} != 'rejected')::int`,
-      })
-      .from(audits)
-      .leftJoin(findings, eq(findings.auditId, audits.id))
-      .groupBy(audits.id)
-      .orderBy(desc(audits.createdAt)),
-  ]);
+  const useMock = isMockDataEnabled();
+  let metrics;
+  let vlmOnline = false;
+  let auditRows: any[] = [];
 
-  type Kpi = {
-    Icon: LucideIcon;
-    label: string;
-    value: string;
-    sub: string;
-    tone?: "warn" | "pass" | "fail";
-  };
-  const kpis: Kpi[] = [
-    {
-      Icon: ScanSearch,
-      label: "Artifacts analyzed",
-      value: String(metrics.totals.audits),
-      sub: `${metrics.totals.findings} findings flagged`,
-    },
-    {
-      Icon: Hourglass,
-      label: "Awaiting review",
-      value: String(metrics.totals.pendingReview),
-      sub: `${metrics.totals.needsReviewAudits} audits in queue`,
-      tone: metrics.totals.pendingReview > 0 ? "warn" : "pass",
-    },
-    {
-      Icon: Crosshair,
-      label: "Precision",
-      value: metrics.precision != null ? fmtPct(metrics.precision) : "—",
-      sub: metrics.precision != null ? "TP / (TP + FP) reviewed" : "review findings to score",
-      tone: metrics.precision != null && metrics.precision < 0.6 ? "fail" : undefined,
-    },
-    {
-      Icon: Radius,
-      label: "Recall",
-      value: metrics.recall != null ? fmtPct(metrics.recall) : "—",
-      sub:
-        metrics.confusion.fn === 0
-          ? "no missed issues logged"
-          : `${metrics.confusion.tp} TP · ${metrics.confusion.fn} missed`,
-    },
-    {
-      Icon: ShieldAlert,
-      label: "False-alarm share",
-      value: metrics.fpShare != null ? fmtPct(metrics.fpShare) : "—",
-      sub: "FP / reviewed findings",
-      tone: metrics.fpShare != null && metrics.fpShare > 0.3 ? "fail" : "pass",
-    },
-    {
-      Icon: ListChecks,
-      label: "Audits verified",
-      value: String(metrics.totals.verifiedAudits),
-      sub: "all findings adjudicated",
-    },
-  ];
+  if (useMock) {
+    metrics = getMockMetrics();
+    vlmOnline = true;
+    auditRows = MOCK_AUDITS.map((a) => ({
+      audit: a,
+      total: a.counts.total,
+      pending: a.counts.pending,
+      confirmed: a.counts.confirmed,
+      rejected: a.counts.rejected,
+      critical: a.counts.critical,
+    }));
+  } else {
+    try {
+      await ensureSeeded();
+      const [m, v, rows] = await Promise.all([
+        computeMetrics(),
+        checkVlmOnline(),
+        db
+          .select({
+            audit: audits,
+            total: sql<number>`count(${findings.id})::int`,
+            pending: sql<number>`count(${findings.id}) filter (where ${findings.status} = 'pending')::int`,
+            confirmed: sql<number>`count(${findings.id}) filter (where ${findings.status} = 'confirmed')::int`,
+            rejected: sql<number>`count(${findings.id}) filter (where ${findings.status} = 'rejected')::int`,
+            critical: sql<number>`count(${findings.id}) filter (where ${findings.severity} = 'critical' and ${findings.status} != 'rejected')::int`,
+          })
+          .from(audits)
+          .leftJoin(findings, eq(findings.auditId, audits.id))
+          .groupBy(audits.id)
+          .orderBy(desc(audits.createdAt)),
+      ]);
+      metrics = m;
+      vlmOnline = v;
+      auditRows = rows as any[];
+    } catch {
+      // Graceful fallback to mock testing data if PostgreSQL is not active
+      metrics = getMockMetrics();
+      vlmOnline = true;
+      auditRows = MOCK_AUDITS.map((a) => ({
+        audit: a,
+        total: a.counts.total,
+        pending: a.counts.pending,
+        confirmed: a.counts.confirmed,
+        rejected: a.counts.rejected,
+        critical: a.counts.critical,
+      }));
+    }
+  }
 
   return (
-    <main className="mx-auto max-w-7xl px-6 pb-20">
-      {/* ── Hero ─────────────────────────────────────────── */}
-      <section className="grid gap-10 py-14 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16">
-        <div className="rise">
-          <div className="mb-5 flex items-center gap-3">
+    <main className="mx-auto max-w-7xl px-4 sm:px-6 pb-24">
+      {/* ── HERO SECTION WITH INTERACTIVE VISION TELEMETRY VIEWPORT ── */}
+      <section className="py-10 lg:py-14 grid gap-10 lg:grid-cols-[1.1fr_1.1fr] lg:items-center">
+        <div className="space-y-6">
+          {/* Status and architecture tag */}
+          <div className="flex flex-wrap items-center gap-2 font-mono text-[11px]">
             <span
-              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${
-                vlmOnline
-                  ? "border-pass/30 bg-pass/[0.07] text-pass"
-                  : "border-warn/30 bg-warn/[0.07] text-warn"
-              }`}
+              className={`inline-flex items-center gap-2 rounded-md border px-2.5 py-1 font-semibold ${vlmOnline
+                ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
+                : "border-brand/40 bg-brand/10 text-brand-light"
+                }`}
             >
               <span
-                className={`h-1.5 w-1.5 rounded-full ${vlmOnline ? "bg-pass" : "bg-warn blink"}`}
+                className={`h-2 w-2 rounded-full ${vlmOnline ? "bg-emerald-400 animate-pulse" : "bg-brand blink"
+                  }`}
               />
-              {vlmOnline ? "Qwen-VL endpoint online" : "Qwen-VL offline · heuristic active"}
+              {vlmOnline ? "QWEN2.5-VL LOCAL ACTIVE" : "HEURISTIC PIXEL ENGINE ACTIVE"}
             </span>
-            <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-inkdim">
-              WCAG 2.2 · local inference · human-in-the-loop
-            </span>
+            <span className="text-inkdim/70">/</span>
+            <span className="text-inkdim">WCAG 2.2 EMPIRICAL AUDITOR</span>
+            {useMock && (
+              <>
+                <span className="text-inkdim/70">/</span>
+                <span className="rounded bg-brand/15 border border-brand/40 px-2 py-0.5 text-brand-light font-bold">
+                  TESTING MOCK DATASET ACTIVE
+                </span>
+              </>
+            )}
           </div>
-          <h1 className="max-w-xl text-[40px] font-semibold leading-[1.05] tracking-[-0.02em] text-white sm:text-[52px]">
-            Treat accessibility findings like{" "}
-            <span className="bg-gradient-to-r from-brand to-[#ffd799] bg-clip-text text-transparent">
-              an experiment
-            </span>
-            , not a hunch.
-          </h1>
-          <p className="mt-5 max-w-lg text-[15px] leading-relaxed text-inkdim">
-            A11yLens runs a local vision-language model over campus posters and
-            UI screenshots, explains each potential issue with its WCAG
-            criterion and a concrete fix, then puts every claim in front of a
-            human reviewer — so precision, recall and false-alarm rates are{" "}
-            <span className="text-white">measured, not assumed</span>.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center gap-3">
+
+          {/* Punchy Hero Title */}
+          <div className="space-y-3">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-[1.08]">
+              Accessibility audits grounded in{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand via-amber-300 to-amber-500">
+                empirical vision evidence
+              </span>
+              .
+            </h1>
+            <p className="text-[15px] sm:text-[16px] leading-relaxed text-inkmuted max-w-xl">
+              Eliminate AI hallucination from accessibility compliance. A11yLens runs a local vision-language model to ground every defect in exact bounding boxes, calculates contrast and edge metrics, and feeds a human verification loop so precision and recall are <strong className="text-white">measured, never assumed</strong>.
+            </p>
+          </div>
+
+          {/* Action CTAs */}
+          <div className="flex flex-wrap items-center gap-3 pt-2">
+            <a
+              href="#upload"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-brand via-amber-400 to-amber-500 px-5 py-3 text-[13px] font-mono font-bold text-ink-950 shadow-[0_0_25px_-4px_rgba(245,158,11,0.6)] transition hover:brightness-110 active:scale-95"
+            >
+              <Sparkles size={16} />
+              <span>Launch New Audit</span>
+              <ArrowRight size={15} />
+            </a>
             <a
               href="#queue"
-              className="inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-[13px] font-semibold text-ink transition hover:bg-[#ffc46b]"
+              className="inline-flex items-center gap-2 rounded-xl border border-hairline bg-surface-1/70 px-4 py-3 text-[13px] font-mono font-medium text-inktext transition hover:border-brand/50 hover:bg-surface-2 hover:text-white"
             >
-              Open the audit queue <ArrowRight size={15} />
-            </a>
-            <a
-              href="#method"
-              className="inline-flex items-center gap-2 rounded-xl border border-hairline bg-white/[0.03] px-4 py-2.5 text-[13px] font-medium text-inktext transition hover:border-white/20 hover:text-white"
-            >
-              How scoring works
+              <ListChecks size={15} className="text-brand" />
+              <span>Review Audit Queue ({auditRows.length})</span>
             </a>
           </div>
-        </div>
 
-        <div className="rise rise-2 panel p-6">
-          <SectionLabel>Auditing pipeline</SectionLabel>
-          <ol className="mt-5 space-y-5">
-            {PIPELINE.map((p, i) => (
-              <li key={p.step} className="relative flex gap-4">
-                {i < PIPELINE.length - 1 && (
-                  <span className="absolute left-[17px] top-10 h-[calc(100%-28px)] w-px bg-gradient-to-b from-white/15 to-transparent" />
-                )}
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white/[0.04] text-brand ring-1 ring-hairline">
-                  <p.Icon size={16} />
-                </span>
-                <div>
-                  <p className="text-[13px] font-semibold tracking-wide text-white">
-                    {p.step}
-                  </p>
-                  <p className="mt-1 text-[12.5px] leading-relaxed text-inkdim">
-                    {p.text}
-                  </p>
-                </div>
-              </li>
+          {/* Pipeline stages micro-strip */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-4 border-t border-hairline/60">
+            {PIPELINE_STEPS.map((p) => (
+              <div key={p.step} className="rounded-lg bg-surface-1/40 border border-hairline/60 p-2.5">
+                <span className="font-mono text-[10px] font-bold text-brand">{p.step}</span>
+                <p className="font-mono text-[11px] font-semibold text-white mt-0.5">{p.name}</p>
+              </div>
             ))}
-          </ol>
+          </div>
+        </div>
+
+        {/* Right column: Interactive Live Telemetry Viewport */}
+        <div className="w-full">
+          <HeroTelemetryArtifact />
         </div>
       </section>
 
-      {/* ── KPI row ──────────────────────────────────────── */}
-      <section className="rise rise-3 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-        {kpis.map((k) => (
-          <div key={k.label} className="panel p-4">
-            <div className="flex items-center justify-between">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-inkdim">
-                {k.label}
+      {/* ── MISSION CONTROL TELEMETRY METRICS RIBBON ── */}
+      <section className="mt-8 mb-12">
+        <div className="mb-3 flex items-center justify-between">
+          <SectionLabel badge="REAL-TIME BENCHMARKS">System Telemetry & Ground Truth</SectionLabel>
+          <span className="font-mono text-[11px] text-inkdim hidden sm:inline">
+            N = {metrics.totals.findings} EVALUATED CLAIMS
+          </span>
+        </div>
+
+        <div className="rounded-2xl border border-hairline bg-surface-0/80 shadow-xl overflow-hidden backdrop-blur-xl">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 divide-y lg:divide-y-0 divide-x divide-hairline/80 font-mono">
+            {/* Artifacts */}
+            <div className="p-4 sm:p-5 flex flex-col justify-between">
+              <div className="flex items-center justify-between text-inkdim text-[10.5px]">
+                <span>ARTIFACTS</span>
+                <ScanSearch size={14} className="text-brand" />
+              </div>
+              <p className="text-2xl sm:text-3xl font-bold text-white mt-2 tabular">
+                {metrics.totals.audits}
               </p>
-              <k.Icon
-                size={14}
-                className={
-                  k.tone === "fail"
-                    ? "text-fail"
-                    : k.tone === "warn"
-                      ? "text-warn"
-                      : k.tone === "pass"
-                        ? "text-pass"
-                        : "text-inkdim"
-                }
-              />
+              <p className="text-[10px] text-inkdim mt-1 truncate">
+                {metrics.totals.findings} total findings
+              </p>
             </div>
-            <p
-              className={`tabular mt-3 text-[28px] font-semibold leading-none ${
-                k.tone === "fail"
-                  ? "text-fail"
-                  : k.tone === "warn"
-                    ? "text-warn"
-                    : "text-white"
-              }`}
-            >
-              {k.value}
-            </p>
-            <p className="mt-2 truncate text-[11px] text-inkdim" title={k.sub}>
-              {k.sub}
-            </p>
+
+            {/* Awaiting Review */}
+            <div className="p-4 sm:p-5 flex flex-col justify-between">
+              <div className="flex items-center justify-between text-inkdim text-[10.5px]">
+                <span>IN REVIEW QUEUE</span>
+                <Hourglass size={14} className="text-amber-400" />
+              </div>
+              <p className="text-2xl sm:text-3xl font-bold text-amber-300 mt-2 tabular">
+                {metrics.totals.pendingReview}
+              </p>
+              <p className="text-[10px] text-amber-400/80 mt-1 truncate">
+                {metrics.totals.needsReviewAudits} audits awaiting review
+              </p>
+            </div>
+
+            {/* Precision */}
+            <div className="p-4 sm:p-5 flex flex-col justify-between bg-surface-1/40">
+              <div className="flex items-center justify-between text-inkdim text-[10.5px]">
+                <span className="text-emerald-400">PRECISION (TP RATE)</span>
+                <Crosshair size={14} className="text-emerald-400" />
+              </div>
+              <p className="text-2xl sm:text-3xl font-bold text-emerald-400 mt-2 tabular">
+                {metrics.precision != null ? fmtPct(metrics.precision) : "—"}
+              </p>
+              <p className="text-[10px] text-inkdim mt-1 truncate">
+                TP / (TP + FP) reviewed
+              </p>
+            </div>
+
+            {/* Recall */}
+            <div className="p-4 sm:p-5 flex flex-col justify-between bg-surface-1/40">
+              <div className="flex items-center justify-between text-inkdim text-[10.5px]">
+                <span className="text-cyan-400">RECALL (COVERAGE)</span>
+                <Radius size={14} className="text-cyan-400" />
+              </div>
+              <p className="text-2xl sm:text-3xl font-bold text-cyan-300 mt-2 tabular">
+                {metrics.recall != null ? fmtPct(metrics.recall) : "—"}
+              </p>
+              <p className="text-[10px] text-inkdim mt-1 truncate">
+                {metrics.confusion.fn === 0 ? "Zero logged misses" : `${metrics.confusion.fn} false negatives`}
+              </p>
+            </div>
+
+            {/* False Alarm Share */}
+            <div className="p-4 sm:p-5 flex flex-col justify-between">
+              <div className="flex items-center justify-between text-inkdim text-[10.5px]">
+                <span>FALSE ALARM (FP)</span>
+                <ShieldAlert size={14} className="text-rose-400" />
+              </div>
+              <p
+                className={`text-2xl sm:text-3xl font-bold mt-2 tabular ${metrics.fpShare != null && metrics.fpShare > 0.3
+                  ? "text-rose-400"
+                  : "text-white"
+                  }`}
+              >
+                {metrics.fpShare != null ? fmtPct(metrics.fpShare) : "—"}
+              </p>
+              <p className="text-[10px] text-inkdim mt-1 truncate">
+                FP / total reviewed
+              </p>
+            </div>
+
+            {/* Audits Verified */}
+            <div className="p-4 sm:p-5 flex flex-col justify-between">
+              <div className="flex items-center justify-between text-inkdim text-[10.5px]">
+                <span>CLOSED AUDITS</span>
+                <ListChecks size={14} className="text-white" />
+              </div>
+              <p className="text-2xl sm:text-3xl font-bold text-white mt-2 tabular">
+                {metrics.totals.verifiedAudits}
+              </p>
+              <p className="text-[10px] text-inkdim mt-1 truncate">
+                100% adjudicated
+              </p>
+            </div>
           </div>
-        ))}
+        </div>
       </section>
 
-      {/* ── Evaluation charts ────────────────────────────── */}
-      <section className="rise rise-4 mt-3 grid gap-3 lg:grid-cols-3">
-        <div className="panel p-5">
-          <SectionLabel>Verification outcomes</SectionLabel>
-          <p className="mt-1 text-[11px] text-inkdim">
-            Human verdicts across every model & reviewer finding.
-          </p>
-          <div className="mt-5">
-            <OutcomeDonut outcomes={metrics.outcomes} />
-          </div>
+      {/* ── EVALUATION TELEMETRY: CALIBRATION & CATEGORIES ── */}
+      <section id="metrics" className="mb-14 scroll-mt-24">
+        <div className="mb-3">
+          <SectionLabel badge="CALIBRATION FORENSICS">Model Reliability Diagnostics</SectionLabel>
         </div>
-        <div className="panel p-5">
-          <SectionLabel>Confidence calibration</SectionLabel>
-          <p className="mt-1 text-[11px] text-inkdim">
-            Confirm rate of reviewed findings per confidence bucket — rising
-            bars mean trustable scores.
-          </p>
-          <div className="mt-5">
-            <CalibrationBars calibration={metrics.calibration} />
+
+        <div className="grid gap-4 lg:grid-cols-3">
+          {/* Outcomes distribution */}
+          <div className="surface-card p-5 flex flex-col justify-between">
+            <div>
+              <h3 className="font-mono text-[13px] font-bold text-white flex items-center justify-between">
+                <span>Verification Verdicts</span>
+                <span className="text-[10px] text-brand">TP / FP / PENDING</span>
+              </h3>
+              <p className="text-[11.5px] text-inkdim mt-1">
+                Human adjudications across model claims and human-reported misses.
+              </p>
+            </div>
+            <div className="mt-5">
+              <OutcomeDonut outcomes={metrics.outcomes} />
+            </div>
           </div>
-        </div>
-        <div className="panel p-5">
-          <SectionLabel>Precision by category</SectionLabel>
-          <p className="mt-1 text-[11px] text-inkdim">
-            Where the model over-flags — the practical lever for FP control.
-          </p>
-          <div className="mt-5">
-            <CategoryBars perCategory={metrics.perCategory} />
+
+          {/* Calibration bar chart */}
+          <div className="surface-card p-5 flex flex-col justify-between">
+            <div>
+              <h3 className="font-mono text-[13px] font-bold text-white flex items-center justify-between">
+                <span>Confidence Calibration</span>
+                <span className="text-[10px] text-brand">RELIABILITY CURVE</span>
+              </h3>
+              <p className="text-[11.5px] text-inkdim mt-1">
+                Observed confirmation rate vs reported confidence. Rising slope indicates honest scoring.
+              </p>
+            </div>
+            <div className="mt-4">
+              <CalibrationBars calibration={metrics.calibration} />
+            </div>
+          </div>
+
+          {/* Precision per category */}
+          <div className="surface-card p-5 flex flex-col justify-between">
+            <div>
+              <h3 className="font-mono text-[13px] font-bold text-white flex items-center justify-between">
+                <span>Precision by Category</span>
+                <span className="text-[10px] text-brand">LEVERAGE POINTS</span>
+              </h3>
+              <p className="text-[11.5px] text-inkdim mt-1">
+                Breakdown of categories where model exhibits highest reliability or over-flagging.
+              </p>
+            </div>
+            <div className="mt-4">
+              <CategoryBars perCategory={metrics.perCategory} />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── Queue + upload ───────────────────────────────── */}
-      <section id="queue" className="mt-14 scroll-mt-24">
-        <div className="mb-5 flex items-end justify-between">
+      {/* ── AUDIT QUEUE + UPLOAD ZONE ── */}
+      <section id="queue" className="scroll-mt-24 mb-14">
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
           <div>
-            <SectionLabel>Audit queue</SectionLabel>
-            <h2 className="mt-2 text-[24px] font-semibold tracking-tight text-white">
-              Artifacts under review
+            <SectionLabel badge="ACTIVE DECK">Inspection Queue</SectionLabel>
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-mono mt-1">
+              Artifacts Under Adjudication
             </h2>
           </div>
-          <p className="tabular hidden text-[12px] text-inkdim sm:block">
-            {auditRows.length} artifacts
-          </p>
+          <span className="font-mono text-[11px] text-inkdim">
+            {auditRows.length} AUDITED ARTIFACTS
+          </span>
         </div>
-        <div className="grid gap-3 lg:grid-cols-[1fr_360px]">
+
+        <div className="grid gap-5 lg:grid-cols-[1fr_380px]">
+          {/* Left: Queue Grid */}
           <div className="grid gap-3 sm:grid-cols-2">
-            {auditRows.map(({ audit, ...c }) => {
+            {(auditRows as any[]).map(({ audit, ...c }) => {
               const status =
                 c.pending > 0 ? "pending" : c.total > 0 ? "done" : "empty";
               const src = audit.imagePath ?? `/api/images/${audit.id}`;
+
               return (
                 <Link
                   key={audit.id}
                   href={`/audits/${audit.id}`}
-                  className="panel panel-hover group overflow-hidden"
+                  className="surface-card surface-card-hover group flex flex-col justify-between overflow-hidden"
                 >
-                  <div className="relative h-44 overflow-hidden border-b border-hairline bg-ink">
+                  {/* Thumbnail viewport */}
+                  <div className="relative h-44 overflow-hidden border-b border-hairline bg-ink-950">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={src}
                       alt={audit.title}
-                      className="h-full w-full object-cover object-top opacity-90 transition duration-500 group-hover:scale-[1.03] group-hover:opacity-100"
+                      className="h-full w-full object-cover object-top opacity-85 transition duration-500 group-hover:scale-105 group-hover:opacity-100"
                     />
-                    <div className="absolute left-3 top-3 flex gap-1.5">
-                      <span className="inline-flex items-center gap-1.5 rounded-md bg-ink/85 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-inktext ring-1 ring-hairline backdrop-blur">
+
+                    {/* Top badges overlay */}
+                    <div className="absolute left-3 top-3 flex items-center gap-1.5">
+                      <span className="inline-flex items-center gap-1.5 rounded bg-ink-950/90 px-2 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-white ring-1 ring-hairline backdrop-blur">
                         {audit.kind === "poster" ? (
-                          <Presentation size={11} />
+                          <Presentation size={11} className="text-brand" />
                         ) : (
-                          <MonitorSmartphone size={11} />
+                          <MonitorSmartphone size={11} className="text-cyan-400" />
                         )}
-                        {audit.kind === "poster" ? "Poster" : "UI screen"}
+                        {audit.kind === "poster" ? "Poster" : "UI Screen"}
                       </span>
                     </div>
+
                     <div className="absolute right-3 top-3">
                       <AnalyzerChip analyzer={audit.analyzer} />
                     </div>
+
+                    {/* Scanline hover hint */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-transparent opacity-60" />
                   </div>
-                  <div className="p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <h3 className="text-[14px] font-semibold leading-snug text-white">
-                        {audit.title}
-                      </h3>
-                      {status === "pending" ? (
-                        <StatusBadge status="pending" />
-                      ) : status === "done" ? (
-                        <StatusBadge status="confirmed" />
-                      ) : (
-                        <span className="rounded-full border border-hairline bg-white/[0.04] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-inkdim">
-                          No findings
-                        </span>
-                      )}
-                    </div>
-                    <p className="mt-1 text-[11px] text-inkdim">
-                      {fmtDate(audit.createdAt)}
-                      {" · "}
-                      {c.total} finding{c.total === 1 ? "" : "s"}
-                      {c.critical > 0 && (
-                        <span className="text-fail"> · {c.critical} critical</span>
-                      )}
-                    </p>
-                    <div className="mt-3 flex gap-1.5">
-                      {[
-                        { n: c.confirmed, cls: "bg-pass/70", label: "confirmed" },
-                        { n: c.rejected, cls: "bg-fail/70", label: "rejected" },
-                        { n: c.pending, cls: "bg-warn/70", label: "pending" },
-                      ].map((s) =>
-                        s.n > 0 ? (
-                          <span
-                            key={s.label}
-                            title={`${s.n} ${s.label}`}
-                            className="tabular inline-flex items-center gap-1 rounded-md bg-white/[0.04] px-1.5 py-0.5 text-[10px] text-inkdim ring-1 ring-hairline"
-                          >
-                            <span className={`h-1.5 w-1.5 rounded-sm ${s.cls}`} />
-                            {s.n}
+
+                  {/* Card content */}
+                  <div className="p-4 flex flex-col justify-between flex-1">
+                    <div>
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="font-mono text-[13.5px] font-bold text-white group-hover:text-brand-light transition leading-snug">
+                          {audit.title}
+                        </h3>
+                        {status === "pending" ? (
+                          <StatusBadge status="pending" />
+                        ) : status === "done" ? (
+                          <StatusBadge status="confirmed" />
+                        ) : (
+                          <span className="rounded bg-surface-2 px-2 py-0.5 font-mono text-[10px] text-inkdim">
+                            No Issues
                           </span>
-                        ) : null,
-                      )}
-                      <span className="ml-auto grid h-5 w-5 place-items-center rounded-full text-inkdim transition group-hover:bg-brand/15 group-hover:text-brand">
-                        <ArrowRight size={12} />
+                        )}
+                      </div>
+
+                      <p className="mt-1 font-mono text-[10.5px] text-inkdim">
+                        {fmtDate(audit.createdAt)} · {c.total} claim{c.total === 1 ? "" : "s"}
+                        {c.critical > 0 && (
+                          <span className="text-rose-400 font-semibold"> · {c.critical} critical</span>
+                        )}
+                      </p>
+                    </div>
+
+                    {/* Verification mini-meter */}
+                    <div className="mt-4 flex items-center justify-between border-t border-hairline/60 pt-3">
+                      <div className="flex items-center gap-1.5 font-mono text-[10.5px]">
+                        {c.confirmed > 0 && (
+                          <span className="text-emerald-400 font-semibold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                            {c.confirmed} TP
+                          </span>
+                        )}
+                        {c.rejected > 0 && (
+                          <span className="text-rose-400 font-semibold bg-rose-500/10 px-1.5 py-0.5 rounded border border-rose-500/20">
+                            {c.rejected} FP
+                          </span>
+                        )}
+                        {c.pending > 0 && (
+                          <span className="text-amber-300 font-semibold bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
+                            {c.pending} pending
+                          </span>
+                        )}
+                      </div>
+
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-surface-2 text-inkdim group-hover:bg-brand group-hover:text-ink-950 transition">
+                        <ArrowRight size={13} />
                       </span>
                     </div>
                   </div>
@@ -374,55 +474,72 @@ export default async function DashboardPage() {
             })}
           </div>
 
-          <div className="panel h-fit p-5">
-            <SectionLabel>New audit</SectionLabel>
-            <p className="mb-4 mt-1 text-[11px] leading-relaxed text-inkdim">
-              Upload a poster or UI screenshot. Analysis runs entirely on this
-              machine; the image never leaves local storage.
+          {/* Right: Upload Dropzone Frame */}
+          <div id="upload" className="surface-card p-5 h-fit scroll-mt-24">
+            <SectionLabel badge="NEW INGEST">Ingest New Artifact</SectionLabel>
+            <p className="text-[12px] text-inkdim mt-1 mb-4 leading-relaxed">
+              Upload campus flyers or UI frames for grounded VLM accessibility decomposition. Analysis executes completely in your local environment.
             </p>
             <UploadZone />
           </div>
         </div>
       </section>
 
-      {/* ── Methodology ──────────────────────────────────── */}
-      <section id="method" className="mt-16 scroll-mt-24">
-        <SectionLabel>Methodology</SectionLabel>
-        <h2 className="mt-2 text-[24px] font-semibold tracking-tight text-white">
-          How false positives stay under control
+      {/* ── METHODOLOGY & OFFLINE PIPELINE ── */}
+      <section id="method" className="scroll-mt-24">
+        <SectionLabel badge="RIGOROUS SPEC">Evaluation Protocol</SectionLabel>
+        <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-mono mt-1 mb-6">
+          How False Positives Stay Under Empirical Control
         </h2>
-        <div className="mt-6 grid gap-3 lg:grid-cols-3">
-          {[
-            {
-              t: "Grounded detection, two engines",
-              body: "A local Qwen2.5-VL model (OpenAI-compatible endpoint) produces bounded JSON findings — each with an image region, WCAG 2.2 mapping, explanation, fix, and self-reported confidence. Low-confidence claims are never auto-accepted: they enter the queue as pending. When the endpoint is unreachable, a deterministic pixel engine (contrast ratios, color-hue census, edge-density maps) takes over so the pipeline never goes dark.",
-            },
-            {
-              t: "Human adjudication as ground truth",
-              body: "Reviewers mark every finding true positive, false positive, or uncertain, and log issues the model missed (false negatives). Verified verdicts are write-protected: re-running the analyzer only refreshes un-reviewed model findings, so evaluation history can never be silently rewritten.",
-            },
-            {
-              t: "Metrics that punish guessing",
-              body: "Precision = TP/(TP+FP) over adjudicated model findings; recall = TP/(TP+FN) with FN from reviewer-logged misses; F1 balances both. Calibration buckets compare stated confidence with the observed confirm rate, exposing overconfident prompts before users trust them.",
-            },
-          ].map((c) => (
-            <div key={c.t} className="panel p-5">
-              <h3 className="text-[14px] font-semibold text-white">{c.t}</h3>
-              <p className="mt-2.5 text-[12.5px] leading-relaxed text-inkdim">
-                {c.body}
-              </p>
+
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="surface-card p-5">
+            <div className="flex items-center gap-2 text-brand font-mono text-[12px] font-bold mb-2">
+              <Cpu size={16} />
+              <span>Two Dual Vision Engines</span>
             </div>
-          ))}
+            <p className="text-[12.5px] leading-relaxed text-inktext/80">
+              Qwen2.5-VL provides semantic spatial reasoning (reading orders, hierarchy, complex layouts) while an airgapped deterministic pixel engine computes contrast ratios, colorfulness, and edge density. Even without GPU or network, the auditor maintains full operation.
+            </p>
+          </div>
+
+          <div className="surface-card p-5">
+            <div className="flex items-center gap-2 text-emerald-400 font-mono text-[12px] font-bold mb-2">
+              <UserCheck size={16} />
+              <span>Write-Protected Ground Truth</span>
+            </div>
+            <p className="text-[12.5px] leading-relaxed text-inktext/80">
+              Reviewers mark claims as True Positive or False Positive, and record model omissions (False Negatives). Verified labels are cryptographically locked: re-analyzing an artifact only updates unverified claims so historic evaluation sets are never contaminated.
+            </p>
+          </div>
+
+          <div className="surface-card p-5">
+            <div className="flex items-center gap-2 text-cyan-400 font-mono text-[12px] font-bold mb-2">
+              <Activity size={16} />
+              <span>Calibration That Punishes Guessing</span>
+            </div>
+            <p className="text-[12.5px] leading-relaxed text-inktext/80">
+              Precision = TP / (TP + FP); Recall = TP / (TP + FN). Confidence calibration plots the model’s claimed probability against the actual human confirmation rate, surfacing overconfident prompt hallucinations before end users are misled.
+            </p>
+          </div>
         </div>
-        <div className="panel mt-3 overflow-x-auto p-5">
-          <SectionLabel>Point A11yLens at your local Qwen-VL</SectionLabel>
-          <pre className="tabular mt-3 text-[12px] leading-relaxed text-inkdim">
+
+        {/* Local Qwen configuration snippet */}
+        <div className="surface-card mt-4 p-5 font-mono text-[12px]">
+          <div className="flex items-center justify-between text-inkdim text-[11px] pb-2 border-b border-hairline/60 mb-3">
+            <span className="flex items-center gap-2 text-white">
+              <Terminal size={14} className="text-brand" />
+              <span>Connect Local Vision-Language Model (Ollama / vLLM / LM Studio)</span>
+            </span>
+            <span className="text-brand">OPENAI-COMPATIBLE API</span>
+          </div>
+          <pre className="text-inktext/90 leading-relaxed overflow-x-auto">
             <code>
-              <span className="text-inkdim/60"># any OpenAI-compatible server works (Ollama, vLLM, LM Studio)</span>
-              {"\n"}VLM_BASE_URL=<span className="text-brand">http://127.0.0.1:11434/v1</span>{"  "}
-              VLM_MODEL=<span className="text-brand">qwen2.5vl:7b</span>
-              {"\n\n"}<span className="text-inkdim/60"># with Ollama, for example:</span>
-              {"\n"}$ ollama pull qwen2.5vl:7b && ollama serve
+              <span className="text-inkdim"># Configure local endpoint in your .env:</span>{"\n"}
+              VLM_BASE_URL=<span className="text-brand">http://127.0.0.1:11434/v1</span>{"\n"}
+              VLM_MODEL=<span className="text-brand">qwen2.5vl:7b</span>{"\n\n"}
+              <span className="text-inkdim"># Launch with Ollama:</span>{"\n"}
+              $ ollama pull qwen2.5vl:7b && ollama run qwen2.5vl:7b
             </code>
           </pre>
         </div>

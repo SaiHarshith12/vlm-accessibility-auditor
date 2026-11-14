@@ -26,7 +26,7 @@ export async function GET() {
     .orderBy(desc(audits.createdAt));
 
   return Response.json({
-    audits: rows.map(({ audit, ...c }) => ({
+    audits: (rows as any[]).map(({ audit, ...c }) => ({
       ...audit,
       stats: undefined,
       counts: c,

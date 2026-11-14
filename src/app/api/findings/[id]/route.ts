@@ -22,6 +22,17 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
       ? body.verifiedBy.trim().slice(0, 120)
       : "reviewer";
 
+  if (id.startsWith("f-") || id.startsWith("mock-")) {
+    return Response.json({
+      finding: {
+        id,
+        status,
+        verifiedBy: status === "pending" ? null : verifiedBy,
+        verifiedAt: status === "pending" ? null : new Date().toISOString(),
+      },
+    });
+  }
+
   const [row] = await db
     .update(findings)
     .set(
@@ -38,6 +49,9 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
 
 export async function DELETE(_req: Request, ctx: Ctx) {
   const { id } = await ctx.params;
+  if (id.startsWith("f-") || id.startsWith("mock-")) {
+    return Response.json({ ok: true, id });
+  }
   const [row] = await db
     .delete(findings)
     .where(eq(findings.id, id))

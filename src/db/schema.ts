@@ -34,7 +34,7 @@ export const audits = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (t) => [index("audits_created_at_idx").on(t.createdAt)],
+  (t: any) => [index("audits_created_at_idx").on(t.createdAt)],
 );
 
 /**
@@ -71,7 +71,7 @@ export const findings = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (t) => [
+  (t: any) => [
     index("findings_audit_idx").on(t.auditId),
     index("findings_status_idx").on(t.status),
   ],

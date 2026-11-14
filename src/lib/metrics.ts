@@ -41,7 +41,7 @@ export async function computeMetrics(): Promise<Metrics> {
     .from(findings);
 
   let tp = 0, fp = 0, uncertain = 0;
-  const fn = rows.filter((r) => r.source === "human").length;
+  const fn = (rows as any[]).filter((r: any) => r.source === "human").length;
 
   type Cat = Category;
   const perCat = new Map<Cat, { tp: number; fp: number; total: number }>();
@@ -101,13 +101,13 @@ export async function computeMetrics(): Promise<Metrics> {
     .from(findings)
     .where(sql`${findings.status} = 'pending'`)
     .groupBy(findings.auditId);
-  const auditsWithPending = new Set(pendingRows.map((r) => r.auditId));
+  const auditsWithPending = new Set((pendingRows as any[]).map((r: any) => r.auditId));
 
   const findingsPerAudit = await db
     .select({ auditId: findings.auditId, count: sql<number>`count(*)::int` })
     .from(findings)
     .groupBy(findings.auditId);
-  const auditsWithFindings = new Set(findingsPerAudit.map((r) => r.auditId));
+  const auditsWithFindings = new Set((findingsPerAudit as any[]).map((r: any) => r.auditId));
 
   const verifiedAudits = [...auditsWithFindings].filter(
     (id) => !auditsWithPending.has(id),

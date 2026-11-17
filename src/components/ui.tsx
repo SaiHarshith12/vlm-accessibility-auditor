@@ -169,3 +169,112 @@ export function ConfidenceMeter({ value }: { value: number | null }) {
     </span>
   );
 }
+
+export function ActiveModelBanner({
+  analyzer,
+  online = true,
+  compact = false,
+}: {
+  analyzer: string;
+  online?: boolean | null;
+  compact?: boolean;
+}) {
+  const isVlm = analyzer === "qwen-vl";
+
+  if (compact) {
+    return (
+      <div className="inline-flex items-center gap-2 rounded-lg border border-hairline bg-surface-1/90 px-3 py-1.5 font-mono text-[11px] shadow-sm">
+        <span className="flex h-2 w-2 relative">
+          <span
+            className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+              isVlm ? "bg-violet-400" : "bg-brand"
+            }`}
+          />
+          <span
+            className={`relative inline-flex rounded-full h-2 w-2 ${
+              isVlm ? "bg-violet-400" : "bg-brand"
+            }`}
+          />
+        </span>
+        <span className="text-inkdim uppercase font-semibold">Active Model:</span>
+        <span className={`font-bold ${isVlm ? "text-violet-300" : "text-brand-light"}`}>
+          {isVlm ? "Qwen2.5-VL-7B (Local VLM)" : "Deterministic Pixel Engine"}
+        </span>
+        <span className="text-inkdim/50">|</span>
+        <span className="text-[10px] text-emerald-400 font-medium">
+          {online ? "ONLINE · GPU/LOCAL" : "OFFLINE FALLBACK"}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="surface-card p-4 border border-hairline/80 font-mono">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-hairline/60">
+        <div className="flex items-center gap-2.5">
+          <div
+            className={`grid h-8 w-8 place-items-center rounded-lg border ${
+              isVlm
+                ? "border-violet-500/40 bg-violet-500/15 text-violet-300"
+                : "border-brand/40 bg-brand/15 text-brand"
+            }`}
+          >
+            <span className="text-[13px] font-bold">{isVlm ? "VL" : "PX"}</span>
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-inkdim uppercase font-bold tracking-wider">
+                Active Vision Model:
+              </span>
+              <span
+                className={`inline-flex items-center gap-1 rounded px-1.5 py-0.2 text-[9px] font-bold uppercase ${
+                  online
+                    ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                    : "bg-amber-500/15 text-amber-300 border border-amber-500/30"
+                }`}
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse" />
+                {online ? "Model Operational" : "Standby"}
+              </span>
+            </div>
+            <h4 className="text-[13.5px] font-bold text-white tracking-tight">
+              {isVlm ? "Qwen2.5-VL-7B Multimodal Engine" : "Airgapped Deterministic Pixel Engine"}
+            </h4>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 text-[11px]">
+          <span className="rounded bg-surface-2 px-2.5 py-1 text-inktext border border-hairline">
+            {isVlm ? "Ollama / vLLM / OpenAI API" : "Sharp 320px Dual-Pass Filter"}
+          </span>
+          <span className="rounded bg-surface-2 px-2.5 py-1 text-brand-light border border-hairline">
+            WCAG 2.2 AA/AAA
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] sm:grid-cols-4 text-inkdim">
+        <div className="rounded border border-hairline/50 bg-surface-0/50 p-2">
+          <span className="text-[9px] uppercase tracking-wider block text-inkdim/70">Inference Mode</span>
+          <span className="text-white font-semibold mt-0.5 block">
+            {isVlm ? "Spatial Visual Tokens" : "Direct Pixel Sampling"}
+          </span>
+        </div>
+        <div className="rounded border border-hairline/50 bg-surface-0/50 p-2">
+          <span className="text-[9px] uppercase tracking-wider block text-inkdim/70">Bounding Box Engine</span>
+          <span className="text-white font-semibold mt-0.5 block">
+            {isVlm ? "Normalized [0..1] Fractions" : "Sobel 8×8 Cluster Grids"}
+          </span>
+        </div>
+        <div className="rounded border border-hairline/50 bg-surface-0/50 p-2">
+          <span className="text-[9px] uppercase tracking-wider block text-inkdim/70">Contrast Evaluation</span>
+          <span className="text-white font-semibold mt-0.5 block">Relative Luminance (sRGB)</span>
+        </div>
+        <div className="rounded border border-hairline/50 bg-surface-0/50 p-2">
+          <span className="text-[9px] uppercase tracking-wider block text-inkdim/70">Adjudication Pipeline</span>
+          <span className="text-emerald-400 font-semibold mt-0.5 block">Write-Protected Ground Truth</span>
+        </div>
+      </div>
+    </div>
+  );
+}

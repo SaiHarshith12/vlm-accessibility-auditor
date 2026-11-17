@@ -35,6 +35,7 @@ import {
   SectionLabel,
   StatusBadge,
   AnalyzerChip,
+  ActiveModelBanner,
   fmtPct,
   fmtDate,
 } from "@/components/ui";
@@ -126,28 +127,20 @@ export default async function DashboardPage() {
       <section className="py-10 lg:py-14 grid gap-10 lg:grid-cols-[1.1fr_1.1fr] lg:items-center">
         <div className="space-y-6">
           {/* Status and architecture tag */}
-          <div className="flex flex-wrap items-center gap-2 font-mono text-[11px]">
-            <span
-              className={`inline-flex items-center gap-2 rounded-md border px-2.5 py-1 font-semibold ${vlmOnline
-                ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
-                : "border-brand/40 bg-brand/10 text-brand-light"
-                }`}
-            >
-              <span
-                className={`h-2 w-2 rounded-full ${vlmOnline ? "bg-emerald-400 animate-pulse" : "bg-brand blink"
-                  }`}
-              />
-              {vlmOnline ? "QWEN2.5-VL LOCAL ACTIVE" : "HEURISTIC PIXEL ENGINE ACTIVE"}
-            </span>
-            <span className="text-inkdim/70">/</span>
-            <span className="text-inkdim">WCAG 2.2 EMPIRICAL AUDITOR</span>
+          <div className="space-y-3 font-mono text-[11px]">
+            <ActiveModelBanner
+              analyzer={vlmOnline ? "qwen-vl" : "heuristic"}
+              online={vlmOnline}
+              compact={true}
+            />
             {useMock && (
-              <>
-                <span className="text-inkdim/70">/</span>
+              <div className="flex items-center gap-2 text-inkdim text-[11px]">
                 <span className="rounded bg-brand/15 border border-brand/40 px-2 py-0.5 text-brand-light font-bold">
                   TESTING MOCK DATASET ACTIVE
                 </span>
-              </>
+                <span>/</span>
+                <span>Self-contained standalone evaluation mode</span>
+              </div>
             )}
           </div>
 

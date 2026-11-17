@@ -22,7 +22,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <span>STATION: LOCAL-01</span>
             </span>
             <span className="text-hairline">|</span>
-            <span className="hidden sm:inline">WCAG 2.2 AA/AAA BENCHMARK ENGINE</span>
+            <span className="hidden sm:inline text-white/80">ACTIVE ENGINE: QWEN2.5-VL · MULTIMODAL VLM</span>
+            <span className="text-hairline hidden md:inline">|</span>
+            <span className="hidden md:inline">WCAG 2.2 AA/AAA BENCHMARK</span>
           </div>
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5 text-emerald-400">

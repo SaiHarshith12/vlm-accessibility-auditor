@@ -31,6 +31,7 @@ import {
   StatusBadge,
   AnalyzerChip,
   ConfidenceMeter,
+  ActiveModelBanner,
   SectionLabel,
   fmtDate,
 } from "@/components/ui";
@@ -166,7 +167,15 @@ export function AuditWorkspace({
 
   const select = (id: string) => {
     setSelectedId((prev) => (prev === id ? null : id));
+    // Scroll the corresponding finding card into view smoothly
+    const cardEl = document.getElementById(`finding-card-${id}`);
+    if (cardEl) {
+      cardEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
   };
+
+  const [focusMode, setFocusMode] = useState<"all" | "selected">("all");
+  const [mouseCoords, setMouseCoords] = useState<{ x: number; y: number } | null>(null);
 
   return (
     <main className="mx-auto max-w-7xl px-4 sm:px-6 pb-24">
@@ -242,19 +251,43 @@ export function AuditWorkspace({
         </div>
       )}
 
+      {/* ── ACTIVE MODEL TELEMETRY HUD ── */}
+      <div className="mt-6">
+        <ActiveModelBanner analyzer={audit.analyzer} online={vlmOnline} />
+      </div>
+
       {/* ── SPLIT VIEWPORT & FINDINGS ── */}
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_460px]">
         {/* Left: Viewport and Pixel Stats */}
         <div className="space-y-4">
           <div className="surface-card overflow-hidden">
-            <div className="flex items-center justify-between border-b border-hairline bg-surface-0/90 px-4 py-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-hairline bg-surface-0/90 px-4 py-3 font-mono">
               <div className="flex items-center gap-2">
-                <SectionLabel badge={`${findings.filter((f) => f.bbox).length} REGIONS`}>
+                <SectionLabel badge={`${findings.filter((f) => f.bbox).length} HIGHLIGHT WINDOWS`}>
                   Annotated Viewport
                 </SectionLabel>
               </div>
 
-              <div className="flex items-center gap-2 font-mono">
+              <div className="flex items-center gap-2 text-[11px]">
+                {mouseCoords && (
+                  <span className="text-inkdim hidden sm:inline-flex items-center gap-1 bg-surface-1 border border-hairline px-2 py-0.5 rounded text-[10px]">
+                    <Crosshair size={11} className="text-brand" />
+                    <span>X:{mouseCoords.x}% Y:{mouseCoords.y}%</span>
+                  </span>
+                )}
+                
+                <button
+                  onClick={() => setFocusMode((m) => (m === "all" ? "selected" : "all"))}
+                  className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold border transition ${
+                    focusMode === "selected"
+                      ? "border-cyan-400/40 bg-cyan-400/15 text-cyan-300"
+                      : "border-hairline bg-surface-1 text-inkdim hover:text-white"
+                  }`}
+                  title="Toggle between displaying all bounding boxes or only the currently selected window"
+                >
+                  <span>{focusMode === "all" ? "Show All" : "Focus Selected"}</span>
+                </button>
+
                 <button
                   onClick={() => setShowOverlay((v) => !v)}
                   className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-semibold border transition ${
@@ -270,76 +303,118 @@ export function AuditWorkspace({
             </div>
 
             {/* Canvas Area */}
-            <div className="relative grid max-h-[76vh] place-items-center overflow-auto bg-ink-950/95 p-4 select-none">
-              <figure className="relative inline-block rounded-lg overflow-hidden border border-hairline/80 shadow-2xl">
+            <div
+              className="relative grid max-h-[76vh] place-items-center overflow-auto bg-ink-950/95 p-4 select-none cursor-crosshair"
+              onMouseMove={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                setMouseCoords({
+                  x: Math.round(((e.clientX - rect.left) / rect.width) * 100),
+                  y: Math.round(((e.clientY - rect.top) / rect.height) * 100),
+                });
+              }}
+              onMouseLeave={() => setMouseCoords(null)}
+            >
+              {/* Image & Overlay Container (Wraps image snugly so bounding boxes align perfectly) */}
+              <div className="relative inline-block max-w-full rounded-xl overflow-visible border border-hairline/80 shadow-2xl bg-black">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={audit.imageSrc}
                   alt={audit.title}
-                  className="block max-h-[70vh] max-w-full"
+                  className="block max-h-[70vh] w-auto max-w-full object-contain mx-auto rounded-lg"
                 />
 
-                {/* SVG Bounding Boxes Overlay */}
+                {/* Tactical Bounding Box Highlight Windows */}
                 {showOverlay && (
-                  <svg
-                    viewBox="0 0 1 1"
-                    preserveAspectRatio="none"
-                    className="pointer-events-none absolute inset-0 h-full w-full"
-                  >
+                  <div className="absolute inset-0 pointer-events-none rounded-lg">
                     {findings
                       .filter((f) => f.bbox)
-                      .map((f) => {
+                      .map((f, i) => {
                         const b = f.bbox!;
                         const active = selectedId === f.id;
-                        const dim = selectedId && !active;
-                        const color =
-                          f.source === "human"
-                            ? "#a78bfa"
-                            : SEV_STROKE[f.severity] ?? "#38bdf8";
+                        const isHuman = f.source === "human";
+                        const sev = f.severity;
+
+                        // If user switched to "focus selected only", hide other boxes
+                        if (focusMode === "selected" && !active) {
+                          return null;
+                        }
+
+                        // Determine tactical border & tint color classes
+                        const colorCls = isHuman
+                          ? "border-violet-400/90 bg-violet-400/15 text-violet-200"
+                          : sev === "critical"
+                          ? "border-rose-500/95 bg-rose-500/18 text-rose-300 shadow-[0_0_16px_rgba(244,63,94,0.35)]"
+                          : sev === "major"
+                          ? "border-amber-400/95 bg-amber-400/18 text-amber-200 shadow-[0_0_16px_rgba(245,158,11,0.35)]"
+                          : "border-cyan-400/95 bg-cyan-400/15 text-cyan-200 shadow-[0_0_14px_rgba(6,182,212,0.3)]";
 
                         return (
-                          <g key={f.id} opacity={dim ? 0.22 : 1}>
-                            <rect
-                              x={b.x}
-                              y={b.y}
-                              width={b.w}
-                              height={b.h}
-                              fill={color}
-                              fillOpacity={active ? 0.22 : 0.08}
-                              stroke={color}
-                              strokeWidth={active ? 3 : 1.5}
-                              vectorEffect="non-scaling-stroke"
-                              strokeDasharray={f.source === "human" ? "4 3" : undefined}
-                              rx={0.003}
-                            />
-                          </g>
+                          <div
+                            key={`bbox-${f.id}`}
+                            id={`bbox-box-${f.id}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              select(f.id);
+                            }}
+                            style={{
+                              left: `${b.x * 100}%`,
+                              top: `${b.y * 100}%`,
+                              width: `${b.w * 100}%`,
+                              height: `${b.h * 100}%`,
+                            }}
+                            className={`absolute pointer-events-auto rounded cursor-pointer transition-all duration-150 border-2 ${colorCls} ${
+                              active
+                                ? "ring-4 ring-brand/60 shadow-[0_0_30px_rgba(245,158,11,0.65)] z-30 scale-[1.01]"
+                                : "opacity-90 hover:opacity-100 hover:ring-2 hover:ring-white/50 z-10"
+                            }`}
+                          >
+                            {/* Tactical Reticle Bracket Corners */}
+                            <span className="absolute -top-1 -left-1 w-2.5 h-2.5 border-t-2 border-l-2 border-inherit" />
+                            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 border-t-2 border-r-2 border-inherit" />
+                            <span className="absolute -bottom-1 -left-1 w-2.5 h-2.5 border-b-2 border-l-2 border-inherit" />
+                            <span className="absolute -bottom-1 -right-1 w-2.5 h-2.5 border-b-2 border-r-2 border-inherit" />
+
+                            {/* Floating Window Identification Pill */}
+                            <div
+                              className={`absolute -top-6 left-0 flex items-center gap-1.5 whitespace-nowrap rounded px-2 py-0.5 font-mono text-[9.5px] font-bold shadow-2xl border ${
+                                active
+                                  ? "bg-brand text-ink-950 border-amber-300 ring-2 ring-brand/50"
+                                  : "bg-ink-950/95 text-white border-inherit"
+                              }`}
+                            >
+                              <span>#{String(i + 1).padStart(2, "0")}</span>
+                              <span className="opacity-50">·</span>
+                              <span>{f.wcag ? f.wcag.split(" ")[0] : f.category}</span>
+                              {f.confidence != null && (
+                                <>
+                                  <span className="opacity-50">·</span>
+                                  <span className={active ? "text-ink-950 font-extrabold" : "text-brand-light"}>
+                                    {Math.round(f.confidence * 100)}%
+                                  </span>
+                                </>
+                              )}
+                            </div>
+
+                            {/* Active Pulsing Radar Target */}
+                            {active && (
+                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <div className="h-8 w-8 rounded-full border-2 border-brand/80 animate-ping" />
+                                <Crosshair size={18} className="text-brand animate-pulse" />
+                              </div>
+                            )}
+
+                            {/* Corner Coordinate HUD Readout (Visible when active) */}
+                            {active && (
+                              <div className="absolute -bottom-5 right-0 rounded bg-ink-950/95 border border-inherit px-1.5 py-0.2 font-mono text-[9px] text-brand">
+                                X:{Math.round(b.x * 100)}% Y:{Math.round(b.y * 100)}% · W:{Math.round(b.w * 100)}% H:{Math.round(b.h * 100)}%
+                              </div>
+                            )}
+                          </div>
                         );
                       })}
-                  </svg>
+                  </div>
                 )}
-
-                {/* Click Targets */}
-                {showOverlay &&
-                  findings
-                    .filter((f) => f.bbox)
-                    .map((f) => {
-                      const b = f.bbox!;
-                      return (
-                        <button
-                          key={`t-${f.id}`}
-                          aria-label={`Select finding: ${f.title}`}
-                          onClick={() => select(f.id)}
-                          className="absolute cursor-pointer"
-                          style={{
-                            left: `${b.x * 100}%`,
-                            top: `${b.y * 100}%`,
-                            width: `${b.w * 100}%`,
-                            height: `${b.h * 100}%`,
-                          }}
-                        />
-                      );
-                    })}
-              </figure>
+              </div>
             </div>
           </div>
 
@@ -428,10 +503,11 @@ export function AuditWorkspace({
               return (
                 <article
                   key={f.id}
+                  id={`finding-card-${f.id}`}
                   onClick={() => select(f.id)}
                   className={`surface-card p-5 cursor-pointer border-l-4 transition-all ${borderCls} ${
                     active
-                      ? "ring-2 ring-brand/50 bg-surface-1 shadow-[0_0_20px_rgba(245,158,11,0.15)]"
+                      ? "ring-2 ring-brand/60 bg-surface-1 shadow-[0_0_25px_rgba(245,158,11,0.2)]"
                       : "hover:border-hairline-bright"
                   }`}
                 >
@@ -453,9 +529,44 @@ export function AuditWorkspace({
                   </div>
 
                   {/* Finding Title */}
-                  <h3 className="mt-2.5 font-mono text-[14px] font-bold leading-snug text-white">
-                    {f.title}
+                  <h3 className="mt-2.5 font-mono text-[14px] font-bold leading-snug text-white flex items-center justify-between gap-2">
+                    <span>{f.title}</span>
+                    {f.bbox && (
+                      <span
+                        className={`shrink-0 inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded border ${
+                          active
+                            ? "bg-brand/15 text-brand-light border-brand/40"
+                            : "bg-surface-2 text-inkdim border-hairline hover:text-white"
+                        }`}
+                        title="Click to locate on picture"
+                      >
+                        <Crosshair size={10} className="text-brand" />
+                        <span>Window #{String(i + 1).padStart(2, "0")}</span>
+                      </span>
+                    )}
                   </h3>
+
+                  {/* Grounded Evidence Strip */}
+                  <div className="mt-2.5 flex flex-wrap items-center gap-1.5 font-mono text-[10.5px]">
+                    {f.bbox && (
+                      <span className="rounded bg-surface-2/90 border border-hairline px-2 py-0.5 text-inkdim flex items-center gap-1">
+                        <span className="text-brand font-bold">POS:</span>
+                        <span>
+                          {Math.round(f.bbox.x * 100)}%, {Math.round(f.bbox.y * 100)}% ({Math.round(f.bbox.w * 100)}×{Math.round(f.bbox.h * 100)}%)
+                        </span>
+                      </span>
+                    )}
+                    {f.wcag && (
+                      <span className="rounded bg-surface-2/90 border border-cyan-400/30 px-2 py-0.5 text-cyan-300">
+                        {f.wcag}
+                      </span>
+                    )}
+                    {f.explanation.includes(":1") && (
+                      <span className="rounded bg-rose-500/10 border border-rose-500/30 px-2 py-0.5 text-rose-300 font-bold">
+                        {f.explanation.match(/\d+\.?\d*:\d+/)?.[0]} contrast (fails 4.5:1)
+                      </span>
+                    )}
+                  </div>
 
                   {/* Reasoning & Suggestion Box */}
                   <div className="mt-3 space-y-2.5 text-[12.5px] leading-relaxed">

@@ -55,7 +55,7 @@ interface Props {
 
 export function RemediationReportClient({ audit, findings }: Props) {
   const [selectedFindingId, setSelectedFindingId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<"interactive" | "annotated_png">("interactive");
+  const [viewMode, setViewMode] = useState<"annotated_png" | "interactive">("annotated_png");
 
   const totalFindings = findings.length;
   const criticalCount = findings.filter((f) => f.severity === "critical").length;
@@ -64,7 +64,10 @@ export function RemediationReportClient({ audit, findings }: Props) {
   const confirmedCount = findings.filter((f) => f.status === "confirmed").length;
 
   const handlePrint = () => {
-    window.print();
+    setViewMode("annotated_png");
+    setTimeout(() => {
+      window.print();
+    }, 150);
   };
 
   return (
@@ -215,6 +218,16 @@ export function RemediationReportClient({ audit, findings }: Props) {
               </h2>
               <div className="flex items-center gap-1 text-[11px] font-mono print:hidden">
                 <button
+                  onClick={() => setViewMode("annotated_png")}
+                  className={`px-2 py-0.5 rounded transition ${
+                    viewMode === "annotated_png"
+                      ? "bg-amber-500/20 text-amber-400 border border-amber-500/40"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  COMPOSITED (WITH OVERLAYS)
+                </button>
+                <button
                   onClick={() => setViewMode("interactive")}
                   className={`px-2 py-0.5 rounded transition ${
                     viewMode === "interactive"
@@ -224,50 +237,30 @@ export function RemediationReportClient({ audit, findings }: Props) {
                 >
                   INTERACTIVE
                 </button>
-                <button
-                  onClick={() => setViewMode("annotated_png")}
-                  className={`px-2 py-0.5 rounded transition ${
-                    viewMode === "annotated_png"
-                      ? "bg-amber-500/20 text-amber-400 border border-amber-500/40"
-                      : "text-slate-400 hover:text-white"
-                  }`}
-                >
-                  COMPOSITED PNG
-                </button>
               </div>
             </div>
 
             {/* Artifact Container */}
             <div className="relative rounded-xl border border-slate-800 bg-slate-900/60 p-2 overflow-hidden shadow-2xl print:border-none print:shadow-none print:p-0 print:overflow-visible print:bg-transparent">
-              {/* PRINT ONLY: Render the baked composited PNG to avoid pagination break and missing overlays */}
-              <div className="hidden print:flex print:items-center print:justify-center overflow-hidden rounded-lg">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`/api/report/${audit.id}/image`}
-                  alt={`Annotated remediation visual for ${audit.title}`}
-                  className="max-h-[460px] w-auto max-w-full object-contain rounded-lg border border-slate-300"
-                />
-              </div>
-
-              {/* SCREEN INTERACTIVE / COMPOSITED TOGGLE */}
-              <div className="print:hidden">
-                {viewMode === "annotated_png" ? (
-                  <div className="relative overflow-hidden rounded-lg">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={`/api/report/${audit.id}/image`}
-                      alt={`Annotated remediation visual for ${audit.title}`}
-                      className="w-full h-auto object-contain rounded-lg"
-                    />
-                  </div>
-                ) : (
-                  <div className="relative overflow-hidden rounded-lg select-none">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={audit.imageSrc}
-                      alt={audit.title}
-                      className="w-full h-auto object-contain rounded-lg"
-                    />
+              {viewMode === "annotated_png" ? (
+                <div className="relative overflow-hidden rounded-lg flex items-center justify-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`/api/report/${audit.id}/image`}
+                    alt={`Annotated remediation visual for ${audit.title}`}
+                    className="w-full h-auto object-contain rounded-lg print:max-h-[500px] print:w-auto print:mx-auto"
+                    loading="eager"
+                  />
+                </div>
+              ) : (
+                <div className="relative overflow-hidden rounded-lg select-none">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={audit.imageSrc}
+                    alt={audit.title}
+                    className="w-full h-auto object-contain rounded-lg"
+                    loading="eager"
+                  />
 
                     {/* Bounding Box Overlays */}
                     {findings.map((f, idx) => {
@@ -312,7 +305,6 @@ export function RemediationReportClient({ audit, findings }: Props) {
                     })}
                   </div>
                 )}
-              </div>
             </div>
 
             <p className="text-xs font-mono text-slate-500 text-center">

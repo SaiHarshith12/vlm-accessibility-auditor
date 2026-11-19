@@ -84,14 +84,14 @@ export function OutcomeDonut({
             >
               <div className="flex items-center gap-2">
                 <span
-                  className="h-2 w-2 rounded-full shadow-sm"
+                  className="h-2 w-2 rounded-full shadow-sm shrink-0"
                   style={{ background: STATUS_COLORS[o.status] }}
                 />
-                <span className="text-inktext/90 font-medium text-[11.5px]">
+                <span className="text-inktext/90 font-medium text-[11.5px] whitespace-nowrap">
                   {STATUS_LABELS[o.status]}
                 </span>
               </div>
-              <div className="flex items-center gap-2 font-mono">
+              <div className="flex items-center gap-2 font-mono shrink-0">
                 <span className="text-inkdim text-[10.5px]">{pct}%</span>
                 <span className="tabular font-bold text-white text-[12px]">
                   {o.count}
@@ -192,9 +192,9 @@ export function CategoryBars({
                 <span className="h-1.5 w-1.5 rounded-sm bg-brand" />
                 {c.label}
               </span>
-              <div className="flex items-center gap-2 font-mono text-[11px]">
+              <div className="flex items-center gap-2 font-mono text-[11px] shrink-0">
                 <span
-                  className={`font-bold px-1.5 py-0.5 rounded ${
+                  className={`font-bold px-1.5 py-0.5 rounded whitespace-nowrap ${
                     precPct != null && precPct >= 70
                       ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
                       : precPct != null
@@ -204,7 +204,7 @@ export function CategoryBars({
                 >
                   {precPct != null ? `${precPct}% PREC` : "UNRATED"}
                 </span>
-                <span className="text-inkdim">
+                <span className="text-inkdim whitespace-nowrap">
                   {c.tp} TP · {c.fp} FP
                 </span>
               </div>

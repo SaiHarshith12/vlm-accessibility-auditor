@@ -63,9 +63,28 @@ export async function GET(req: NextRequest, ctx: Ctx) {
 
     if (audit.imageData) {
       imageBuffer = Buffer.from(audit.imageData, "base64");
+    } else if (audit.imagePath?.startsWith("data:image/svg+xml")) {
+      const svgContent = decodeURIComponent(
+        audit.imagePath.replace(/^data:image\/svg\+xml;utf8,/, ""),
+      );
+      imageBuffer = Buffer.from(svgContent, "utf-8");
+    } else if (audit.imagePath?.startsWith("data:image/")) {
+      const base64Data = audit.imagePath.replace(/^data:image\/[a-z0-9+]+;base64,/, "");
+      imageBuffer = Buffer.from(base64Data, "base64");
     } else if (audit.imagePath) {
       const p = path.join(process.cwd(), "public", audit.imagePath.replace(/^\//, ""));
-      imageBuffer = await fs.readFile(p);
+      try {
+        imageBuffer = await fs.readFile(p);
+      } catch {
+        imageBuffer = await sharp({
+          create: {
+            width: audit.width || 800,
+            height: audit.height || 1200,
+            channels: 4,
+            background: { r: 15, g: 23, b: 42, alpha: 1 },
+          },
+        }).png().toBuffer();
+      }
     } else {
       return Response.json({ error: "Audit has no image data" }, { status: 422 });
     }

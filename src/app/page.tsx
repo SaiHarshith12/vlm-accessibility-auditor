@@ -343,7 +343,7 @@ export default async function DashboardPage() {
           <SectionLabel badge="CALIBRATION FORENSICS">Model Reliability Diagnostics</SectionLabel>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-5 sm:grid-cols-2">
           {/* Outcomes distribution */}
           <div className="surface-card p-5 flex flex-col justify-between">
             <div>

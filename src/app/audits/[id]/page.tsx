@@ -82,6 +82,8 @@ export default async function AuditDetailPage({
               ? { x: f.bboxX, y: f.bboxY, w: f.bboxW, h: f.bboxH }
               : null,
           status: f.status,
+          humanSeverity: f.humanSeverity,
+          remediationRating: f.remediationRating,
           verifiedBy: f.verifiedBy,
           verifiedAt: f.verifiedAt ? f.verifiedAt.toISOString() : null,
           createdAt: f.createdAt.toISOString(),

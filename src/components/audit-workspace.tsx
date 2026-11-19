@@ -23,7 +23,10 @@ import {
   AlertTriangle,
   CheckCircle2,
   Sparkles,
-} from "lucide-react";
+  FileText,
+  ThumbsUp,
+  ThumbsDown,
+} from "@/components/icons";
 import type { ImageStats } from "@/lib/taxonomy";
 import {
   SeverityBadge,
@@ -53,6 +56,8 @@ export interface WorkspaceFinding {
   source: string;
   category: string;
   severity: string;
+  humanSeverity?: string | null;
+  remediationRating?: string | null;
   title: string;
   explanation: string;
   suggestion: string;
@@ -94,6 +99,7 @@ export function AuditWorkspace({
   const [busyIds, setBusyIds] = useState<Set<string>>(new Set());
   const [acting, setActing] = useState<"reanalyze" | "delete" | null>(null);
   const [notice, setNotice] = useState("");
+  const [ratings, setRatings] = useState<Record<string, "helpful" | "not_helpful" | null>>({});
   const listRef = useRef<HTMLDivElement>(null);
 
   const counts = useMemo(() => {
@@ -165,6 +171,31 @@ export function AuditWorkspace({
     router.refresh();
   };
 
+  const rateRemediation = async (findingId: string, rating: "helpful" | "not_helpful") => {
+    const current = (ratings[findingId] !== undefined
+      ? ratings[findingId]
+      : findings.find((f) => f.id === findingId)?.remediationRating ?? null) as
+      | "helpful"
+      | "not_helpful"
+      | null;
+    const nextRating = current === rating ? null : rating;
+
+    // Optimistic state update
+    setRatings((prev) => ({ ...prev, [findingId]: nextRating }));
+
+    try {
+      await fetch(`/api/findings/${findingId}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ remediationRating: nextRating }),
+      });
+      router.refresh();
+    } catch {
+      // Revert if network failed
+      setRatings((prev) => ({ ...prev, [findingId]: current }));
+    }
+  };
+
   const select = (id: string) => {
     setSelectedId((prev) => (prev === id ? null : id));
     // Scroll the corresponding finding card into view smoothly
@@ -214,7 +245,14 @@ export function AuditWorkspace({
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-2 font-mono text-[12px]">
+        <div className="flex flex-wrap items-center gap-2 font-mono text-[12px]">
+          <Link
+            href={`/report/${audit.id}`}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-brand/40 bg-brand/10 px-3.5 py-2 font-semibold text-brand-bright transition hover:bg-brand/20 shadow-[0_0_15px_-3px_rgba(245,158,11,0.25)]"
+          >
+            <FileText size={14} className="text-brand" />
+            <span>Executive Report →</span>
+          </Link>
           <button
             onClick={reanalyze}
             disabled={acting !== null}
@@ -569,15 +607,55 @@ export function AuditWorkspace({
                   </div>
 
                   {/* Reasoning & Suggestion Box */}
-                  <div className="mt-3 space-y-2.5 text-[12.5px] leading-relaxed">
-                    <p className="text-inktext/85">{f.explanation}</p>
-                    <div className="rounded-lg border border-brand/20 bg-brand/[0.06] p-3">
-                      <p className="mb-0.5 font-mono text-[9.5px] font-bold uppercase tracking-wider text-brand">
-                        Suggested Remediation
-                      </p>
-                      <p className="text-brand-bright/90 font-medium text-[12px]">{f.suggestion}</p>
-                    </div>
-                  </div>
+                  {(() => {
+                    const activeRating = ratings[f.id] !== undefined ? ratings[f.id] : f.remediationRating;
+                    return (
+                      <div className="mt-3 space-y-2.5 text-[12.5px] leading-relaxed">
+                        <p className="text-inktext/85">{f.explanation}</p>
+                        <div className="rounded-lg border border-brand/20 bg-brand/[0.06] p-3">
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <p className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-brand">
+                              Suggested Remediation
+                            </p>
+                            <div className="flex items-center gap-1 font-mono text-[10px]">
+                              <span className="text-inkdim text-[9.5px] mr-0.5">Useful?</span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  rateRemediation(f.id, "helpful");
+                                }}
+                                className={`p-1 rounded transition ${
+                                  activeRating === "helpful"
+                                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+                                    : "text-inkdim hover:text-emerald-400"
+                                }`}
+                                title="Helpful fix"
+                              >
+                                <ThumbsUp size={11} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  rateRemediation(f.id, "not_helpful");
+                                }}
+                                className={`p-1 rounded transition ${
+                                  activeRating === "not_helpful"
+                                    ? "bg-rose-500/20 text-rose-400 border border-rose-500/40"
+                                    : "text-inkdim hover:text-rose-400"
+                                }`}
+                                title="Not helpful fix"
+                              >
+                                <ThumbsDown size={11} />
+                              </button>
+                            </div>
+                          </div>
+                          <p className="text-brand-bright/90 font-medium text-[12px]">{f.suggestion}</p>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {/* Technical Footer */}
                   <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-hairline/60 pt-3 font-mono text-[10.5px]">

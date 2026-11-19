@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { audits, findings, type NewFinding } from "@/db/schema";
-import { runAnalysis, type AuditKind } from "@/lib/analysis";
+import { runAnalysis, VlmExecutionError, type AuditKind, type AnalyzerId } from "@/lib/analysis";
 import { desc, eq, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import sharp from "sharp";
@@ -72,11 +72,35 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: "Could not decode image" }, { status: 422 });
   }
 
-  const { analyzer, findings: found, stats, analyzerMs } = await runAnalysis(
-    buffer,
-    file.type,
-    kind,
-  );
+  const allowFallback = form.get("allowFallback") === "true";
+  const preferredAnalyzer = (form.get("preferredAnalyzer") as AnalyzerId) || "qwen-vl";
+
+  let analysisResult;
+  try {
+    analysisResult = await runAnalysis(
+      buffer,
+      file.type,
+      kind,
+      { allowFallback, preferredAnalyzer },
+    );
+  } catch (err) {
+    if (err instanceof VlmExecutionError) {
+      return Response.json(
+        {
+          error: err.message,
+          vlmFailed: true,
+          requireConfirmation: true,
+        },
+        { status: 424 },
+      );
+    }
+    return Response.json(
+      { error: err instanceof Error ? err.message : "Analysis failed" },
+      { status: 500 },
+    );
+  }
+
+  const { analyzer, findings: found, stats, analyzerMs } = analysisResult;
 
   const [audit] = await db
     .insert(audits)

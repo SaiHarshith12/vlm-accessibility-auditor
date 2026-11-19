@@ -28,6 +28,8 @@ export const audits = pgTable(
     height: integer("height"),
     // Which analyzer produced the model findings: 'qwen-vl' | 'heuristic' | 'seeded-demo'
     analyzer: text("analyzer").notNull().default("heuristic"),
+    // Execution runtime in milliseconds for the analyzer call
+    analyzerMs: integer("analyzer_ms"),
     // Measured low-level image statistics used as audit evidence.
     stats: jsonb("stats"),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -65,6 +67,10 @@ export const findings = pgTable(
     bboxH: doublePrecision("bbox_h"),
     // Human verification state: 'pending' | 'confirmed' | 'rejected' | 'uncertain'
     status: text("status").notNull().default("pending"),
+    // Optional human-corrected severity if different from model ('critical' | 'major' | 'minor')
+    humanSeverity: text("human_severity"),
+    // Human feedback on remediation suggestion: 'helpful' | 'not_helpful'
+    remediationRating: text("remediation_rating"),
     verifiedBy: text("verified_by"),
     verifiedAt: timestamp("verified_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })

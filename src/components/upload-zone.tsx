@@ -15,18 +15,19 @@ import {
 } from "lucide-react";
 
 type Kind = "poster" | "ui_screenshot";
-type Phase = "idle" | "uploading" | "analyzing" | "error";
+type Phase = "idle" | "uploading" | "analyzing" | "vlm_prompt" | "error";
 
 export function UploadZone() {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
+  const pendingFileRef = useRef<File | null>(null);
   const [drag, setDrag] = useState(false);
   const [kind, setKind] = useState<Kind>("poster");
   const [phase, setPhase] = useState<Phase>("idle");
   const [message, setMessage] = useState("");
 
   const submit = useCallback(
-    async (file: File) => {
+    async (file: File, allowFallback = false) => {
       if (!file.type.startsWith("image/")) {
         setPhase("error");
         setMessage("Only image files are supported (PNG, JPG, WebP).");
@@ -37,15 +38,24 @@ export function UploadZone() {
         setMessage("Image exceeds 12MB local buffer limit.");
         return;
       }
+      pendingFileRef.current = file;
       setPhase("uploading");
       setMessage(file.name);
       try {
         const form = new FormData();
         form.append("file", file);
         form.append("kind", kind);
+        if (allowFallback) {
+          form.append("allowFallback", "true");
+        }
         setPhase("analyzing");
         const res = await fetch("/api/audits", { method: "POST", body: form });
         const json = await res.json();
+        if (res.status === 424 || json.vlmFailed) {
+          setPhase("vlm_prompt");
+          setMessage(json.error ?? "Qwen-VL Vision model failed to respond or is currently offline.");
+          return;
+        }
         if (!res.ok) throw new Error(json.error ?? "Analysis pipeline failed");
         router.push(`/audits/${json.id}?fresh=1`);
       } catch (e) {
@@ -145,6 +155,49 @@ export function UploadZone() {
             <span className="rounded bg-white/5 border border-hairline px-2 py-0.5 font-mono text-[10px] text-inkdim">
               Local VLM + Deterministic Pixel Engine
             </span>
+          </div>
+        ) : phase === "vlm_prompt" ? (
+          <div
+            className="flex flex-col items-center gap-3 p-2 text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400">
+              <Cpu size={20} />
+            </div>
+            <div className="space-y-1">
+              <p className="font-mono text-[13px] font-bold text-white tracking-tight">
+                Qwen-VL Vision Model Unavailable
+              </p>
+              <p className="font-mono text-[11px] text-amber-300 max-w-sm leading-relaxed">
+                {message}
+              </p>
+              <p className="text-[11px] text-inkdim pt-0.5">
+                Would you like to proceed with the Deterministic Pixel Engine, or retry Qwen-VL?
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => pendingFileRef.current && void submit(pendingFileRef.current, true)}
+                className="rounded-lg bg-amber-500 px-3.5 py-1.5 font-mono text-xs font-bold text-ink-950 hover:bg-amber-400 transition shadow-[0_0_15px_-3px_rgba(245,158,11,0.5)]"
+              >
+                Proceed with Pixel Engine →
+              </button>
+              <button
+                type="button"
+                onClick={() => pendingFileRef.current && void submit(pendingFileRef.current, false)}
+                className="rounded-lg border border-hairline bg-surface-2 px-3 py-1.5 font-mono text-xs text-white hover:border-brand/40 transition"
+              >
+                Retry Qwen-VL
+              </button>
+              <button
+                type="button"
+                onClick={() => setPhase("idle")}
+                className="rounded px-2.5 py-1 font-mono text-[10px] text-inkdim hover:text-white transition"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         ) : phase === "error" ? (
           <div className="flex flex-col items-center gap-2.5">

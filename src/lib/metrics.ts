@@ -12,12 +12,25 @@ export interface Metrics {
     needsReviewAudits: number;
     verifiedAudits: number;
   };
+  avgAnalyzerMs: number | null;
   confusion: { tp: number; fp: number; fn: number; uncertain: number };
   precision: number | null;
   recall: number | null;
   f1: number | null;
   /** Share of reviewed model findings that were false positives. */
   fpShare: number | null;
+  severityAgreement: {
+    total: number;
+    agreed: number;
+    agreementRate: number | null;
+    matrix: Record<"critical" | "major" | "minor", Record<"critical" | "major" | "minor", number>>;
+  };
+  remediationScore: {
+    rated: number;
+    helpful: number;
+    notHelpful: number;
+    helpfulRate: number | null;
+  };
   outcomes: { status: string; count: number }[];
   calibration: { bucket: string; mid: number; confirmRate: number; n: number }[];
   perCategory: {
@@ -36,6 +49,9 @@ export async function computeMetrics(): Promise<Metrics> {
       source: findings.source,
       status: findings.status,
       category: findings.category,
+      severity: findings.severity,
+      humanSeverity: findings.humanSeverity,
+      remediationRating: findings.remediationRating,
       confidence: findings.confidence,
     })
     .from(findings);
@@ -55,8 +71,33 @@ export async function computeMetrics(): Promise<Metrics> {
   const outcomeCount = new Map<string, number>();
   const bump = (k: string) => outcomeCount.set(k, (outcomeCount.get(k) ?? 0) + 1);
 
+  // Severity agreement tracking
+  let severityTotal = 0;
+  let severityAgreed = 0;
+  type Sev = "critical" | "major" | "minor";
+  const validSevs: Sev[] = ["critical", "major", "minor"];
+  const matrix: Record<Sev, Record<Sev, number>> = {
+    critical: { critical: 0, major: 0, minor: 0 },
+    major: { critical: 0, major: 0, minor: 0 },
+    minor: { critical: 0, major: 0, minor: 0 },
+  };
+
+  // Remediation rating tracking
+  let remediationRated = 0;
+  let remediationHelpful = 0;
+  let remediationNotHelpful = 0;
+
   for (const r of rows) {
     bump(r.status);
+
+    if (r.remediationRating === "helpful") {
+      remediationRated++;
+      remediationHelpful++;
+    } else if (r.remediationRating === "not_helpful") {
+      remediationRated++;
+      remediationNotHelpful++;
+    }
+
     if (r.source !== "model") continue;
     const cat = (r.category as Cat) in CATEGORY_META ? (r.category as Cat) : "other";
     if (!perCat.has(cat)) perCat.set(cat, { tp: 0, fp: 0, total: 0 });
@@ -65,6 +106,18 @@ export async function computeMetrics(): Promise<Metrics> {
     if (r.status === "confirmed") {
       tp++;
       pc.tp++;
+
+      // Check severity agreement for confirmed findings
+      const modelSev = (validSevs.includes(r.severity as Sev) ? r.severity : "major") as Sev;
+      const humanSev = (r.humanSeverity && validSevs.includes(r.humanSeverity as Sev)
+        ? r.humanSeverity
+        : modelSev) as Sev;
+
+      severityTotal++;
+      if (modelSev === humanSev) {
+        severityAgreed++;
+      }
+      matrix[modelSev][humanSev]++;
     } else if (r.status === "rejected") {
       fp++;
       pc.fp++;
@@ -113,6 +166,14 @@ export async function computeMetrics(): Promise<Metrics> {
     (id) => !auditsWithPending.has(id),
   ).length;
 
+  const [runtimeResult] = await db
+    .select({
+      avg: sql<number | null>`round(avg(${audits.analyzerMs}))::int`,
+    })
+    .from(audits)
+    .where(sql`${audits.analyzerMs} is not null`);
+  const avgAnalyzerMs = runtimeResult?.avg ?? null;
+
   return {
     totals: {
       audits: auditCount,
@@ -122,11 +183,24 @@ export async function computeMetrics(): Promise<Metrics> {
       needsReviewAudits: auditsWithPending.size,
       verifiedAudits,
     },
+    avgAnalyzerMs,
     confusion: { tp, fp, fn, uncertain },
     precision,
     recall,
     f1,
     fpShare,
+    severityAgreement: {
+      total: severityTotal,
+      agreed: severityAgreed,
+      agreementRate: severityTotal > 0 ? severityAgreed / severityTotal : null,
+      matrix,
+    },
+    remediationScore: {
+      rated: remediationRated,
+      helpful: remediationHelpful,
+      notHelpful: remediationNotHelpful,
+      helpfulRate: remediationRated > 0 ? remediationHelpful / remediationRated : null,
+    },
     outcomes: ["pending", "confirmed", "rejected", "uncertain"].map((s) => ({
       status: s,
       count: outcomeCount.get(s) ?? 0,

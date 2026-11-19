@@ -36,5 +36,13 @@ export {
   Sparkles,
   Zap,
   Filter,
+  Printer,
+  Download,
+  FileText,
+  Image,
+  ThumbsUp,
+  ThumbsDown,
+  Clock,
+  AlertTriangle,
   type LucideIcon,
 } from "lucide-react";

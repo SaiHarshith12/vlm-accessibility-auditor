@@ -700,22 +700,55 @@ export interface AnalysisResult {
   analyzerMs: number;
 }
 
+export class VlmExecutionError extends Error {
+  constructor(message = "Qwen-VL Vision model failed to produce findings or is offline") {
+    super(message);
+    this.name = "VlmExecutionError";
+  }
+}
+
+export interface AnalysisOptions {
+  allowFallback?: boolean;
+  preferredAnalyzer?: AnalyzerId;
+}
+
 export async function runAnalysis(
   buffer: Buffer,
   mime: string,
   kind: AuditKind,
+  options?: AnalysisOptions,
 ): Promise<AnalysisResult> {
   const t0 = Date.now();
+  const allowFallback = options?.allowFallback ?? false;
+  const preferred = options?.preferredAnalyzer ?? "qwen-vl";
+
+  if (preferred === "heuristic") {
+    console.info("[a11y] User requested Deterministic Pixel Engine analyzer...");
+    const heuristic = await analyzeHeuristic(buffer, kind);
+    const analyzerMs = Date.now() - t0;
+    return { analyzer: "heuristic", findings: heuristic.findings, stats: heuristic.stats, analyzerMs };
+  }
+
+  // Primary: Always attempt Qwen-VL model
   const { model } = vlmConfig();
-  console.info(`[a11y] Trying Qwen-VL model "${model}"...`);
+  console.info(`[a11y] Primarily attempting Qwen-VL model "${model}"...`);
   const vlm = await analyzeWithQwenVL(buffer, mime, kind);
   const { stats } = await measure(buffer);
   if (vlm && vlm.length > 0) {
     const analyzerMs = Date.now() - t0;
-    console.info(`[a11y] Qwen-VL produced ${vlm.length} finding(s) in ${analyzerMs}ms.`);
+    console.info(`[a11y] Qwen-VL succeeded: produced ${vlm.length} finding(s) in ${analyzerMs}ms.`);
     return { analyzer: "qwen-vl", findings: vlm, stats, analyzerMs };
   }
-  console.info("[a11y] Qwen-VL returned no usable findings; using heuristic fallback.");
+
+  // Qwen-VL failed or returned no usable findings
+  console.warn(`[a11y] Qwen-VL (${model}) returned no usable findings or is unreachable.`);
+  if (!allowFallback) {
+    throw new VlmExecutionError(
+      `Primary Qwen-VL (${model}) model failed to produce findings or is currently offline. Please confirm if you wish to proceed with the alternative Deterministic Pixel Engine.`,
+    );
+  }
+
+  console.info("[a11y] Fallback explicitly permitted: using Deterministic Pixel Engine.");
   const heuristic = await analyzeHeuristic(buffer, kind);
   const analyzerMs = Date.now() - t0;
   console.info(`[a11y] Heuristic analyzer produced ${heuristic.findings.length} finding(s) in ${analyzerMs}ms.`);

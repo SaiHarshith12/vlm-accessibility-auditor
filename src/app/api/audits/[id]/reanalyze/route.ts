@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { audits, findings, type NewFinding } from "@/db/schema";
-import { runAnalysis, type AuditKind } from "@/lib/analysis";
+import { runAnalysis, VlmExecutionError, type AuditKind, type AnalyzerId } from "@/lib/analysis";
 import { and, eq } from "drizzle-orm";
 import path from "node:path";
 import fs from "node:fs/promises";
@@ -29,11 +29,40 @@ export async function POST(_req: Request, ctx: Ctx) {
     return Response.json({ error: "Audit has no image bytes" }, { status: 422 });
   }
 
-  const result = await runAnalysis(
-    buffer,
-    audit.mime,
-    audit.kind as AuditKind,
-  );
+  let body: { allowFallback?: boolean; preferredAnalyzer?: AnalyzerId } = {};
+  try {
+    body = await _req.json();
+  } catch {
+    // defaults
+  }
+
+  let result;
+  try {
+    result = await runAnalysis(
+      buffer,
+      audit.mime,
+      audit.kind as AuditKind,
+      {
+        allowFallback: body.allowFallback ?? false,
+        preferredAnalyzer: body.preferredAnalyzer ?? "qwen-vl",
+      },
+    );
+  } catch (err) {
+    if (err instanceof VlmExecutionError) {
+      return Response.json(
+        {
+          error: err.message,
+          vlmFailed: true,
+          requireConfirmation: true,
+        },
+        { status: 424 },
+      );
+    }
+    return Response.json(
+      { error: err instanceof Error ? err.message : "Re-analysis failed" },
+      { status: 500 },
+    );
+  }
 
   // Drop only un-reviewed model findings; verified verdicts and human-added
   // ground truth are preserved so evaluation history is never destroyed.

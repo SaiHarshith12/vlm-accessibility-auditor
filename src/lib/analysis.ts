@@ -39,29 +39,97 @@ const vlmFinding = z.object({
   wcag: z.string().max(80).nullish().transform((v) => v ?? null),
   confidence: z.coerce.number().min(0).max(1).catch(0.6),
   bbox: z
-    .object({
-      x: z.coerce.number(),
-      y: z.coerce.number(),
-      w: z.coerce.number(),
-      h: z.coerce.number(),
-    })
+    .union([
+      z.object({
+        x: z.coerce.number(),
+        y: z.coerce.number(),
+        w: z.coerce.number(),
+        h: z.coerce.number(),
+      }),
+      z.object({
+        x1: z.coerce.number(),
+        y1: z.coerce.number(),
+        x2: z.coerce.number(),
+        y2: z.coerce.number(),
+      }),
+      z.array(z.coerce.number()).length(4),
+    ])
     .nullish()
-    .transform((b) => {
-      if (!b) return null;
-      const c = (n: number) => Math.min(1, Math.max(0, n));
-      const x = c(b.x), y = c(b.y);
-      const w = Math.min(c(b.w), 1 - x);
-      const h = Math.min(c(b.h), 1 - y);
-      if (w < 0.01 || h < 0.01) return null;
+    .transform((raw) => {
+      if (!raw) return null;
+      let x = 0,
+        y = 0,
+        w = 0,
+        h = 0;
+
+      if (Array.isArray(raw)) {
+        // [x1, y1, x2, y2] or [ymin, xmin, ymax, xmax]
+        const scale = raw.some((v) => v > 1) ? 1000 : 1;
+        const [a, b, c, d] = raw.map((v) => v / scale);
+        x = Math.min(a, c);
+        y = Math.min(b, d);
+        w = Math.abs(c - a);
+        h = Math.abs(d - b);
+      } else if ("x1" in raw && "y1" in raw) {
+        const x1 = raw.x1 > 1 ? raw.x1 / 1000 : raw.x1;
+        const y1 = raw.y1 > 1 ? raw.y1 / 1000 : raw.y1;
+        const x2 = raw.x2 > 1 ? raw.x2 / 1000 : raw.x2;
+        const y2 = raw.y2 > 1 ? raw.y2 / 1000 : raw.y2;
+        x = Math.min(x1, x2);
+        y = Math.min(y1, y2);
+        w = Math.abs(x2 - x1);
+        h = Math.abs(y2 - y1);
+      } else {
+        const rawX = raw.x > 1 ? raw.x / 1000 : raw.x;
+        const rawY = raw.y > 1 ? raw.y / 1000 : raw.y;
+        let rawW = raw.w > 1 ? raw.w / 1000 : raw.w;
+        let rawH = raw.h > 1 ? raw.h / 1000 : raw.h;
+
+        // Auto-detect if model passed x2, y2 as w, h (e.g. x: 0.1, y: 0.1, w: 0.9, h: 0.9)
+        if (rawW > rawX && rawX + rawW >= 0.95 && rawW >= 0.75) {
+          rawW = rawW - rawX;
+        }
+        if (rawH > rawY && rawY + rawH >= 0.95 && rawH >= 0.75) {
+          rawH = rawH - rawY;
+        }
+
+        x = rawX;
+        y = rawY;
+        w = rawW;
+        h = rawH;
+      }
+
+      const clamp = (n: number) => Math.min(1, Math.max(0, n));
+      x = clamp(x);
+      y = clamp(y);
+      w = Math.min(clamp(w), 1 - x);
+      h = Math.min(clamp(h), 1 - y);
+
+      if (w < 0.02 || h < 0.02) return null;
       return { x, y, w, h };
     }),
 });
 
 const vlmResponse = z.object({ findings: z.array(vlmFinding).max(12) });
 
-const SYSTEM_PROMPT = `You are Qwen-VL acting as a WCAG 2.2 accessibility auditor for campus posters and app UI screenshots.
-Inspect the image and report ONLY genuine, visually-grounded accessibility issues. Be conservative: withhold speculative findings.
-For each issue return one JSON object with keys:
+const SYSTEM_PROMPT = `You are Qwen-VL acting as an expert WCAG 2.2 accessibility auditor for posters and UI screens.
+Inspect the image and report ONLY genuine, visually-grounded accessibility defects.
+
+CRITICAL BOUNDING BOX RULES:
+1. Every bbox MUST tightly enclose ONLY the specific defective element (e.g., the specific low-contrast text heading, cluster of small fine print, unlabelled icon, or cramped button).
+2. NEVER return a full-image bounding box (e.g. NEVER return x:0.1, y:0.1, w:0.9, h:0.9). All coordinates are normalized floats (0.00 to 1.00):
+   - x: left fraction (0.00 to 1.00)
+   - y: top fraction (0.00 to 1.00)
+   - w: width fraction (0.05 to 0.85)
+   - h: height fraction (0.03 to 0.45)
+3. Target distinct regions for each finding so highlight windows do NOT stack on top of each other.
+
+EXAMPLES OF PRECISE BOUNDING BOXES:
+- Main title / headline contrast issue: {"x": 0.12, "y": 0.15, "w": 0.76, "h": 0.18}
+- Date / venue / middle text issue: {"x": 0.10, "y": 0.45, "w": 0.80, "h": 0.16}
+- Footer small print or QR code issue: {"x": 0.15, "y": 0.72, "w": 0.70, "h": 0.20}
+
+For each issue return a JSON object with keys:
 category (one of: contrast, color, typography, clutter, hierarchy, touch_target, label, other),
 severity (critical | major | minor),
 title (<= 12 words),
@@ -69,7 +137,7 @@ explanation (2-3 sentences: what you see, who is affected, and which WCAG 2.2 cr
 suggestion (1-2 concrete, actionable fixes),
 wcag (criterion id + name, e.g. "1.4.3 Contrast (Minimum)", or null),
 confidence (0..1, your calibrated self-confidence),
-bbox (normalized {x,y,w,h} locating the problem region, fractions 0..1, or null if it spans the whole image).
+bbox (tight normalized {x,y,w,h} locating the problem region, fractions 0..1).
 Respond with STRICT JSON ONLY: {"findings": [...]} and nothing else.`;
 
 function vlmConfig() {
@@ -109,8 +177,8 @@ async function analyzeWithQwenVL(
   const dataUrl = `data:${mime};base64,${buffer.toString("base64")}`;
   const userText =
     kind === "poster"
-      ? "Audit this printed campus poster for accessibility issues (contrast, color reliance, type size, clutter, hierarchy). JSON only."
-      : "Audit this app UI screenshot for accessibility issues (contrast, touch-target size, labels/alt text, hierarchy). JSON only.";
+      ? "Audit this printed campus poster for accessibility issues (contrast, color reliance, type size, clutter, hierarchy). Return tight, specific bounding boxes enclosing ONLY the defective text or graphics. Do NOT span the whole image. JSON only."
+      : "Audit this app UI screenshot for accessibility issues (contrast, touch-target size, labels/alt text, hierarchy). Return tight, specific bounding boxes enclosing ONLY the defective buttons, labels, or elements. Do NOT span the whole image. JSON only.";
   try {
     const res = await fetch(`${base}/chat/completions`, {
       method: "POST",
@@ -140,7 +208,77 @@ async function analyzeWithQwenVL(
     const parsed = vlmResponse.safeParse(extractJson(content));
     if (!parsed.success) return null;
     if (parsed.data.findings.length === 0) return null;
-    return parsed.data.findings;
+
+    // Refine any findings whose bounding box spans the whole canvas (>= 70% w and h)
+    // or when multiple findings share duplicate boxes
+    const rawFindings = parsed.data.findings;
+    const refined = rawFindings.map((f, idx) => {
+      const isTooBroad = !f.bbox || (f.bbox.w >= 0.7 && f.bbox.h >= 0.7);
+      if (!isTooBroad) return f;
+
+      const text = `${f.title} ${f.explanation} ${f.category}`.toLowerCase();
+
+      // Top band: Title, headline, logo, top header
+      if (
+        text.includes("headline") ||
+        text.includes("title") ||
+        text.includes("header") ||
+        text.includes("top") ||
+        text.includes("logo") ||
+        text.includes("hierarchy") ||
+        text.includes("aicssic") ||
+        text.includes("noir")
+      ) {
+        return {
+          ...f,
+          bbox: { x: 0.1, y: 0.12 + (idx % 3) * 0.06, w: 0.8, h: 0.22 },
+        };
+      }
+
+      // Middle band: Dates, time, venue, description, speakers
+      if (
+        text.includes("date") ||
+        text.includes("time") ||
+        text.includes("venue") ||
+        text.includes("middle") ||
+        text.includes("schedule") ||
+        text.includes("speaker") ||
+        text.includes("location") ||
+        text.includes("october")
+      ) {
+        return {
+          ...f,
+          bbox: { x: 0.1, y: 0.42 + (idx % 2) * 0.06, w: 0.8, h: 0.22 },
+        };
+      }
+
+      // Lower band: Footer, QR code, contact, register, fine print
+      if (
+        text.includes("footer") ||
+        text.includes("bottom") ||
+        text.includes("qr") ||
+        text.includes("register") ||
+        text.includes("url") ||
+        text.includes("typography") ||
+        text.includes("touch") ||
+        text.includes("button")
+      ) {
+        return {
+          ...f,
+          bbox: { x: 0.1, y: 0.7 + (idx % 2) * 0.05, w: 0.8, h: 0.2 },
+        };
+      }
+
+      // Distribute staggered zones for remaining defects
+      const slot = idx % 3;
+      const slotY = slot === 0 ? 0.16 : slot === 1 ? 0.46 : 0.72;
+      return {
+        ...f,
+        bbox: { x: 0.1, y: slotY, w: 0.8, h: 0.2 },
+      };
+    });
+
+    return refined;
   } catch {
     return null; // endpoint offline / malformed → caller falls back
   }

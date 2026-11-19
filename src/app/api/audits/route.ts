@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: "Could not decode image" }, { status: 422 });
   }
 
-  const { analyzer, findings: found, stats } = await runAnalysis(
+  const { analyzer, findings: found, stats, analyzerMs } = await runAnalysis(
     buffer,
     file.type,
     kind,
@@ -88,6 +88,7 @@ export async function POST(req: NextRequest) {
       width,
       height,
       analyzer,
+      analyzerMs,
       stats,
     })
     .returning({ id: audits.id });

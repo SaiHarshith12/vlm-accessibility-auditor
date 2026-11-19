@@ -241,3 +241,82 @@ export function CategoryBars({
     </div>
   );
 }
+
+/** Confusion matrix of model-predicted severity vs human-adjudicated severity. */
+export function SeverityDriftMatrix({
+  agreement,
+}: {
+  agreement: Metrics["severityAgreement"];
+}) {
+  const sevs: Array<"critical" | "major" | "minor"> = ["critical", "major", "minor"];
+  const labels: Record<string, string> = {
+    critical: "Critical",
+    major: "Major",
+    minor: "Minor",
+  };
+
+  const ratePct =
+    agreement.agreementRate != null ? Math.round(agreement.agreementRate * 100) : null;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between text-[11px] font-mono">
+        <span className="text-inkdim uppercase">Model vs Reviewer Adjudication</span>
+        <span className="font-bold text-amber-400 bg-amber-950/20 px-2 py-0.5 rounded border border-amber-900/40">
+          {ratePct != null ? `${ratePct}% SEVERITY AGREEMENT` : "INSUFFICIENT DATA"}
+        </span>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-center font-mono text-[11px] border-collapse">
+          <thead>
+            <tr>
+              <th className="p-2 text-left font-normal text-inkdim text-[10px]">
+                MODEL \ HUMAN
+              </th>
+              {sevs.map((s) => (
+                <th key={s} className="p-2 font-bold text-inktext uppercase text-[10px]">
+                  {labels[s]}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {sevs.map((mSev) => (
+              <tr key={mSev} className="border-t border-hairline/40">
+                <td className="p-2 text-left font-bold text-inktext uppercase text-[10px]">
+                  {labels[mSev]}
+                </td>
+                {sevs.map((hSev) => {
+                  const count = agreement?.matrix?.[mSev]?.[hSev] ?? 0;
+                  const isDiag = mSev === hSev;
+                  const cellBg =
+                    count === 0
+                      ? "bg-surface-1/30 text-inkdim/50"
+                      : isDiag
+                      ? "bg-emerald-500/15 text-emerald-300 font-bold border border-emerald-500/30"
+                      : "bg-amber-500/15 text-amber-300 border border-amber-500/30";
+
+                  return (
+                    <td key={hSev} className="p-1">
+                      <div className={`py-1.5 rounded-md ${cellBg}`}>{count}</div>
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="flex items-center justify-between text-[9.5px] font-mono text-inkdim pt-1 border-t border-hairline/40">
+        <span className="flex items-center gap-1 text-emerald-400">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Exact Match (Diagonal)
+        </span>
+        <span className="flex items-center gap-1 text-amber-400">
+          <span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> Severity Drift (Off-Diagonal)
+        </span>
+      </div>
+    </div>
+  );
+}

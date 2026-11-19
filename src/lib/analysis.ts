@@ -559,6 +559,7 @@ export interface AnalysisResult {
   analyzer: AnalyzerId;
   findings: CandidateFinding[];
   stats: ImageStats | null;
+  analyzerMs: number;
 }
 
 export async function runAnalysis(
@@ -566,16 +567,19 @@ export async function runAnalysis(
   mime: string,
   kind: AuditKind,
 ): Promise<AnalysisResult> {
+  const t0 = Date.now();
   const { model } = vlmConfig();
   console.info(`[a11y] Trying Qwen-VL model "${model}"...`);
   const vlm = await analyzeWithQwenVL(buffer, mime, kind);
   const { stats } = await measure(buffer);
   if (vlm && vlm.length > 0) {
-    console.info(`[a11y] Qwen-VL produced ${vlm.length} finding(s).`);
-    return { analyzer: "qwen-vl", findings: vlm, stats };
+    const analyzerMs = Date.now() - t0;
+    console.info(`[a11y] Qwen-VL produced ${vlm.length} finding(s) in ${analyzerMs}ms.`);
+    return { analyzer: "qwen-vl", findings: vlm, stats, analyzerMs };
   }
   console.info("[a11y] Qwen-VL returned no usable findings; using heuristic fallback.");
   const heuristic = await analyzeHeuristic(buffer, kind);
-  console.info(`[a11y] Heuristic analyzer produced ${heuristic.findings.length} finding(s).`);
-  return { analyzer: "heuristic", findings: heuristic.findings, stats };
+  const analyzerMs = Date.now() - t0;
+  console.info(`[a11y] Heuristic analyzer produced ${heuristic.findings.length} finding(s) in ${analyzerMs}ms.`);
+  return { analyzer: "heuristic", findings: heuristic.findings, stats, analyzerMs };
 }

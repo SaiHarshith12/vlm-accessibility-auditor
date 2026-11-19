@@ -5,9 +5,9 @@ import { ScanEye, ShieldCheck, Activity } from "@/components/icons";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "A11yLens — Vision-First Accessibility Auditing Console",
+  title: "AURA — Accessibility Understanding and Remediation Assistant",
   description:
-    "Scientific accessibility verification for campus posters and UI artifacts with local vision-language models, grounded human adjudication, and empirical false-positive control.",
+    "AURA: Accessibility Understanding and Remediation Assistant. Scientific accessibility verification for campus posters and UI artifacts with local vision-language models, grounded human adjudication, and empirical false-positive control.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -48,14 +48,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-[16px] font-bold tracking-tight text-white group-hover:text-brand-light transition">
-                    A11yLens
+                    AURA
                   </span>
                   <span className="rounded bg-brand/10 border border-brand/25 px-1.5 py-0.2 text-[9px] font-mono font-semibold tracking-wider text-brand-light">
-                    PRO-MAX
+                    AUDITOR
                   </span>
                 </div>
                 <span className="text-[10.5px] font-medium tracking-wide text-inkdim/90">
-                  Grounded Vision Accessibility Auditor
+                  Accessibility Understanding and Remediation Assistant
                 </span>
               </div>
             </Link>
@@ -104,7 +104,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-10 sm:flex-row sm:items-center sm:justify-between text-[12px] text-inkdim">
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
-                <span className="font-mono font-semibold text-white">A11yLens Console</span>
+                <span className="font-mono font-semibold text-white">AURA Console</span>
                 <span className="text-hairline">/</span>
                 <span>Vision-first accessibility ground-truthing</span>
               </div>

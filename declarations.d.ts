@@ -71,4 +71,11 @@ declare module "lucide-react" {
   export const Zap: LucideIcon;
   export const Cpu: LucideIcon;
   export const Filter: LucideIcon;
+  export const Printer: LucideIcon;
+  export const Download: LucideIcon;
+  export const FileText: LucideIcon;
+  export const Image: LucideIcon;
+  export const ThumbsUp: LucideIcon;
+  export const ThumbsDown: LucideIcon;
+  export const Clock: LucideIcon;
 }

@@ -81,10 +81,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 Calibration & ROC
               </Link>
               <Link
-                href="/#method"
+                href="/methodology"
                 className="hidden sm:inline-flex rounded-lg border border-transparent px-3 py-1.5 text-[12.5px] font-medium text-inkdim transition hover:border-hairline hover:bg-white/[0.04] hover:text-white"
               >
-                Methodology
+                Methodology & Limits
               </Link>
               <div className="ml-2 hidden h-4 w-px bg-hairline md:block" />
               <a
@@ -114,6 +114,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             </div>
             <div className="flex flex-col sm:items-end gap-1.5 font-mono text-[11px]">
               <div className="flex items-center gap-3">
+                <Link href="/methodology" className="hover:text-brand underline underline-offset-4 text-brand-light">
+                  Limitations Statement
+                </Link>
+                <span className="text-hairline">·</span>
                 <span className="flex items-center gap-1 text-emerald-400">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                   PRECISION BENCHMARK: PASS

@@ -198,7 +198,7 @@ export function ActiveModelBanner({
         </span>
         <span className="text-inkdim uppercase font-semibold">Active Model:</span>
         <span className={`font-bold ${isVlm ? "text-violet-300" : "text-brand-light"}`}>
-          {isVlm ? "Qwen2.5-VL-7B (Local VLM)" : "Deterministic Pixel Engine"}
+          {isVlm ? "Qwen2.5-VL-3B (Local VLM)" : "Deterministic Pixel Engine"}
         </span>
         <span className="text-inkdim/50">|</span>
         <span className="text-[10px] text-emerald-400 font-medium">
@@ -238,7 +238,7 @@ export function ActiveModelBanner({
               </span>
             </div>
             <h4 className="text-[13.5px] font-bold text-white tracking-tight">
-              {isVlm ? "Qwen2.5-VL-7B Multimodal Engine" : "Airgapped Deterministic Pixel Engine"}
+              {isVlm ? "Qwen2.5-VL-3B Multimodal Engine" : "Airgapped Deterministic Pixel Engine"}
             </h4>
           </div>
         </div>

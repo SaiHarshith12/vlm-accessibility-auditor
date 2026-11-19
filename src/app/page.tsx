@@ -162,7 +162,7 @@ export default async function DashboardPage() {
               .
             </h1>
             <p className="text-[15px] sm:text-[16px] leading-relaxed text-inkmuted max-w-xl">
-              Eliminate AI hallucination from accessibility compliance. A11yLens runs a local vision-language model to ground every defect in exact bounding boxes, calculates contrast and edge metrics, and feeds a human verification loop so precision and recall are <strong className="text-white">measured, never assumed</strong>.
+              Eliminate AI hallucination from accessibility compliance. AURA (Accessibility Understanding and Remediation Assistant) runs a local vision-language model to ground every defect in exact bounding boxes, calculates contrast and edge metrics, and feeds a human verification loop so precision and recall are <strong className="text-white">measured, never assumed</strong>.
             </p>
           </div>
 

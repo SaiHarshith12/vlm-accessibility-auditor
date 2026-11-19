@@ -252,3 +252,129 @@ body {
   border: 1px solid var(--color-hairline);
   background-color: rgba(15, 21, 35, 0.8);
 }
+
+/* ─────────────────────────────────────────────────
+   PRINT / PDF EXPORT OVERRIDES
+   Applied when the user clicks "Print / PDF" in the
+   Remediation Report. Forces a readable white-paper
+   layout regardless of dark-mode Tailwind classes.
+───────────────────────────────────────────────── */
+@media print {
+  /* Base reset to white paper */
+  *,
+  *::before,
+  *::after {
+    color-scheme: light !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #111111 !important;
+    font-family: system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif !important;
+    font-size: 11pt !important;
+  }
+
+  /* Kill dark backgrounds across all Tailwind surface / slate classes */
+  [class*="bg-slate"],
+  [class*="bg-surface"],
+  [class*="bg-ink"],
+  .surface-card {
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+  }
+
+  /* Make every dark text readable on white */
+  [class*="text-white"],
+  [class*="text-inktext"],
+  [class*="text-slate-100"],
+  [class*="text-slate-200"],
+  [class*="text-slate-300"] {
+    color: #111111 !important;
+  }
+
+  [class*="text-inkdim"],
+  [class*="text-slate-400"],
+  [class*="text-slate-500"] {
+    color: #555555 !important;
+  }
+
+  /* Keep accent colours legible */
+  [class*="text-amber"] { color: #b45309 !important; }
+  [class*="text-emerald"] { color: #065f46 !important; }
+  [class*="text-red"] { color: #991b1b !important; }
+  [class*="text-sky"],
+  [class*="text-cyan"] { color: #0369a1 !important; }
+  [class*="text-rose"] { color: #9f1239 !important; }
+
+  /* Borders */
+  [class*="border-slate"],
+  [class*="border-hairline"],
+  [class*="border-amber-950"],
+  [class*="border-surface"] {
+    border-color: #d1d5db !important;
+  }
+
+  /* Accent tinted backgrounds → very light tint */
+  [class*="bg-amber"],
+  [class*="bg-brand"] {
+    background: #fef3c7 !important;
+  }
+  [class*="bg-emerald"],
+  [class*="bg-green"] {
+    background: #d1fae5 !important;
+  }
+  [class*="bg-red"],
+  [class*="bg-rose"] {
+    background: #fee2e2 !important;
+  }
+  [class*="bg-sky"],
+  [class*="bg-cyan"] {
+    background: #e0f2fe !important;
+  }
+
+  /* Layout: single column, full width */
+  .print\:hidden,
+  header,
+  .sticky { display: none !important; }
+
+  main {
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Two-col report layout → stack vertically */
+  .lg\:grid-cols-12,
+  [class*="lg:col-span"] {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  /* Section breaks */
+  section { page-break-inside: avoid; }
+
+  /* Images: show print version, hide interactive version */
+  .print-image-block { display: block !important; }
+  .print-image-hide  { display: none  !important; }
+
+  /* Bounding-box overlays in interactive view: keep visible in print */
+  .absolute { position: absolute; }
+
+  /* Ensure cards never get sliced mid-page */
+  .print\:break-inside-avoid,
+  .break-inside-avoid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Ensure image container is not clipped */
+  .overflow-hidden { overflow: visible !important; }
+
+  /* Page margins */
+  @page {
+    margin: 15mm 12mm;
+    size: A4 portrait;
+  }
+}

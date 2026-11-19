@@ -68,7 +68,7 @@ export async function POST(_req: Request, ctx: Ctx) {
 
   await db
     .update(audits)
-    .set({ analyzer: result.analyzer, stats: result.stats })
+    .set({ analyzer: result.analyzer, stats: result.stats, analyzerMs: result.analyzerMs })
     .where(eq(audits.id, id));
 
   return Response.json({ ok: true, analyzer: result.analyzer, added: result.findings.length });

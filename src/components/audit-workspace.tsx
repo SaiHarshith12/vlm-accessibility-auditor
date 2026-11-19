@@ -140,19 +140,35 @@ export function AuditWorkspace({
       router.refresh();
     });
 
-  const reanalyze = async () => {
+  const reanalyze = async (allowFallback = false) => {
     setActing("reanalyze");
     setNotice("");
     try {
-      const res = await fetch(`/api/audits/${audit.id}/reanalyze`, { method: "POST" });
+      const res = await fetch(`/api/audits/${audit.id}/reanalyze`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ allowFallback }),
+      });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "Failed");
+      if (!res.ok) {
+        if (json.vlmFailed || res.status === 424) {
+          const proceed = window.confirm(
+            "Primary Qwen-VL model failed to respond or is currently offline.\n\nWould you like to proceed with the alternative Deterministic Pixel Engine fallback?",
+          );
+          if (proceed) {
+            return reanalyze(true);
+          }
+          setNotice("Re-analysis cancelled: Qwen-VL model was unavailable.");
+          return;
+        }
+        throw new Error(json.error ?? "Failed");
+      }
       setNotice(
-        `Re-analyzed with ${json.analyzer === "qwen-vl" ? "Qwen-VL model" : "deterministic heuristic engine"}. ${json.added} candidate finding(s) refreshed. Existing verified ground-truth labels remained write-protected.`,
+        `Re-analyzed with ${json.analyzer === "qwen-vl" ? "Qwen-VL model" : "Deterministic Pixel Engine fallback"}. ${json.added} candidate finding(s) refreshed. Existing verified ground-truth labels remained write-protected.`,
       );
       router.refresh();
-    } catch {
-      setNotice("Re-analysis failed — source image bytes may be unreachable.");
+    } catch (e) {
+      setNotice(e instanceof Error ? e.message : "Re-analysis failed — source image bytes may be unreachable.");
     } finally {
       setActing(null);
     }
@@ -254,7 +270,7 @@ export function AuditWorkspace({
             <span>Executive Report →</span>
           </Link>
           <button
-            onClick={reanalyze}
+            onClick={() => void reanalyze(false)}
             disabled={acting !== null}
             className="inline-flex items-center gap-2 rounded-xl border border-hairline bg-surface-1 px-3.5 py-2 font-semibold text-white transition hover:border-brand/40 hover:bg-surface-2 disabled:opacity-50"
           >

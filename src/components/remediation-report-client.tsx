@@ -204,10 +204,10 @@ export function RemediationReportClient({ audit, findings }: Props) {
           </div>
         </section>
 
-        {/* Two-Column Audit Layout */}
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-          {/* Left Column: Visual Artifact with Defect Reticles */}
-          <section className="lg:col-span-5 flex flex-col gap-4">
+        {/* Two-Column Audit Layout (Stacks vertically on print) */}
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 print:block">
+          {/* Visual Artifact with Defect Reticles */}
+          <section className="lg:col-span-5 flex flex-col gap-4 print:w-full print:mb-8 print:break-inside-avoid">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-mono uppercase tracking-wider text-amber-500/90 flex items-center gap-2">
                 <Crosshair className="h-4 w-4 text-amber-400" />
@@ -238,68 +238,81 @@ export function RemediationReportClient({ audit, findings }: Props) {
             </div>
 
             {/* Artifact Container */}
-            <div className="relative rounded-xl border border-slate-800 bg-slate-900/60 p-2 overflow-hidden shadow-2xl">
-              {viewMode === "annotated_png" ? (
-                <div className="relative overflow-hidden rounded-lg">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`/api/report/${audit.id}/image`}
-                    alt={`Annotated remediation visual for ${audit.title}`}
-                    className="w-full h-auto object-contain rounded-lg"
-                  />
-                </div>
-              ) : (
-                <div className="relative overflow-hidden rounded-lg select-none">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={audit.imageSrc}
-                    alt={audit.title}
-                    className="w-full h-auto object-contain rounded-lg"
-                  />
+            <div className="relative rounded-xl border border-slate-800 bg-slate-900/60 p-2 overflow-hidden shadow-2xl print:border-none print:shadow-none print:p-0 print:overflow-visible print:bg-transparent">
+              {/* PRINT ONLY: Render the baked composited PNG to avoid pagination break and missing overlays */}
+              <div className="hidden print:flex print:items-center print:justify-center overflow-hidden rounded-lg">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/api/report/${audit.id}/image`}
+                  alt={`Annotated remediation visual for ${audit.title}`}
+                  className="max-h-[460px] w-auto max-w-full object-contain rounded-lg border border-slate-300"
+                />
+              </div>
 
-                  {/* Bounding Box Overlays */}
-                  {findings.map((f, idx) => {
-                    if (!f.bbox) return null;
-                    const isSelected = selectedFindingId === f.id;
-                    const isCritical = f.severity === "critical";
-                    const isMajor = f.severity === "major";
+              {/* SCREEN INTERACTIVE / COMPOSITED TOGGLE */}
+              <div className="print:hidden">
+                {viewMode === "annotated_png" ? (
+                  <div className="relative overflow-hidden rounded-lg">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`/api/report/${audit.id}/image`}
+                      alt={`Annotated remediation visual for ${audit.title}`}
+                      className="w-full h-auto object-contain rounded-lg"
+                    />
+                  </div>
+                ) : (
+                  <div className="relative overflow-hidden rounded-lg select-none">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={audit.imageSrc}
+                      alt={audit.title}
+                      className="w-full h-auto object-contain rounded-lg"
+                    />
 
-                    const borderClass = isCritical
-                      ? "border-red-500 bg-red-500/15"
-                      : isMajor
-                      ? "border-amber-400 bg-amber-400/15"
-                      : "border-sky-400 bg-sky-400/15";
+                    {/* Bounding Box Overlays */}
+                    {findings.map((f, idx) => {
+                      if (!f.bbox) return null;
+                      const isSelected = selectedFindingId === f.id;
+                      const isCritical = f.severity === "critical";
+                      const isMajor = f.severity === "major";
 
-                    const badgeClass = isCritical
-                      ? "bg-red-500 text-black"
-                      : isMajor
-                      ? "bg-amber-400 text-black"
-                      : "bg-sky-400 text-black";
+                      const borderClass = isCritical
+                        ? "border-red-500 bg-red-500/15"
+                        : isMajor
+                        ? "border-amber-400 bg-amber-400/15"
+                        : "border-sky-400 bg-sky-400/15";
 
-                    return (
-                      <div
-                        key={f.id}
-                        onClick={() => setSelectedFindingId(f.id)}
-                        style={{
-                          left: `${f.bbox.x * 100}%`,
-                          top: `${f.bbox.y * 100}%`,
-                          width: `${f.bbox.w * 100}%`,
-                          height: `${f.bbox.h * 100}%`,
-                        }}
-                        className={`absolute border-2 cursor-pointer transition-all duration-150 ${borderClass} ${
-                          isSelected ? "ring-2 ring-white ring-offset-2 ring-offset-slate-950 z-20" : "z-10"
-                        }`}
-                      >
+                      const badgeClass = isCritical
+                        ? "bg-red-500 text-black"
+                        : isMajor
+                        ? "bg-amber-400 text-black"
+                        : "bg-sky-400 text-black";
+
+                      return (
                         <div
-                          className={`absolute -top-5 left-0 rounded px-1.5 py-0.5 text-[9px] font-mono font-bold tracking-tight shadow-md uppercase ${badgeClass}`}
+                          key={f.id}
+                          onClick={() => setSelectedFindingId(f.id)}
+                          style={{
+                            left: `${f.bbox.x * 100}%`,
+                            top: `${f.bbox.y * 100}%`,
+                            width: `${f.bbox.w * 100}%`,
+                            height: `${f.bbox.h * 100}%`,
+                          }}
+                          className={`absolute border-2 cursor-pointer transition-all duration-150 ${borderClass} ${
+                            isSelected ? "ring-2 ring-white ring-offset-2 ring-offset-slate-950 z-20" : "z-10"
+                          }`}
                         >
-                          #{idx + 1} {f.category}
+                          <div
+                            className={`absolute -top-5 left-0 rounded px-1.5 py-0.5 text-[9px] font-mono font-bold tracking-tight shadow-md uppercase ${badgeClass}`}
+                          >
+                            #{idx + 1} {f.category}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
 
             <p className="text-xs font-mono text-slate-500 text-center">
@@ -307,14 +320,14 @@ export function RemediationReportClient({ audit, findings }: Props) {
             </p>
           </section>
 
-          {/* Right Column: Comprehensive Remediation Catalog */}
-          <section className="lg:col-span-7 flex flex-col gap-6">
+          {/* Remediation Catalog */}
+          <section className="lg:col-span-7 flex flex-col gap-6 print:w-full">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-mono uppercase tracking-wider text-amber-500/90 flex items-center gap-2">
-                <Layers className="h-4 w-4 text-amber-400" />
+              <h2 className="text-sm font-mono uppercase tracking-wider text-amber-500/90 print:text-amber-800 flex items-center gap-2">
+                <Layers className="h-4 w-4 text-amber-400 print:text-amber-700" />
                 ACTIONABLE REMEDIATION SPECIFICATIONS
               </h2>
-              <span className="text-xs font-mono text-slate-400">
+              <span className="text-xs font-mono text-slate-400 print:text-slate-600">
                 {findings.length} ISSUES IDENTIFIED
               </span>
             </div>
@@ -330,7 +343,7 @@ export function RemediationReportClient({ audit, findings }: Props) {
                     key={f.id}
                     id={`finding-${f.id}`}
                     onClick={() => setSelectedFindingId(f.id)}
-                    className={`rounded-xl border p-5 transition-all ${
+                    className={`rounded-xl border p-5 transition-all print:break-inside-avoid print:bg-white print:border-slate-300 print:shadow-none ${
                       isSelected
                         ? "border-amber-500/80 bg-slate-900/90 shadow-lg shadow-amber-500/5 ring-1 ring-amber-500/40"
                         : "border-slate-800 bg-slate-900/40 hover:border-slate-700"

@@ -30,6 +30,12 @@ export const CATEGORY_META: Record<Category, { label: string; blurb: string }> =
 export const SEVERITIES = ["critical", "major", "minor"] as const;
 export type Severity = (typeof SEVERITIES)[number];
 
+export const SEVERITY_META: Record<Severity, { label: string; color: string }> = {
+  critical: { label: "Critical", color: "rose" },
+  major: { label: "Major", color: "amber" },
+  minor: { label: "Minor", color: "cyan" },
+};
+
 export type AuditKind = "poster" | "ui_screenshot";
 export type AnalyzerId = "qwen-vl" | "heuristic" | "seeded-demo";
 

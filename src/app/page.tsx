@@ -393,7 +393,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Severity Drift Matrix */}
-          <div className="surface-card p-5 flex flex-col justify-between">
+          <div className="surface-card p-5 flex flex-col justify-start gap-4">
             <div>
               <h3 className="font-mono text-[13px] font-bold text-white flex items-center justify-between">
                 <span>Severity Drift</span>
@@ -403,7 +403,7 @@ export default async function DashboardPage() {
                 Model severity vs human-verified ground truth.
               </p>
             </div>
-            <div className="mt-4">
+            <div>
               <SeverityDriftMatrix agreement={metrics.severityAgreement} />
             </div>
           </div>
@@ -605,9 +605,9 @@ export default async function DashboardPage() {
             <code>
               <span className="text-inkdim"># Configure local endpoint in your .env:</span>{"\n"}
               VLM_BASE_URL=<span className="text-brand">http://127.0.0.1:11434/v1</span>{"\n"}
-              VLM_MODEL=<span className="text-brand">qwen2.5vl:7b</span>{"\n\n"}
+              VLM_MODEL=<span className="text-brand">qwen2.5vl:3b</span>{"\n\n"}
               <span className="text-inkdim"># Launch with Ollama:</span>{"\n"}
-              $ ollama pull qwen2.5vl:7b && ollama run qwen2.5vl:7b
+              $ ollama pull qwen2.5vl:3b && ollama run qwen2.5vl:3b
             </code>
           </pre>
         </div>

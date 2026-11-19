@@ -13,9 +13,9 @@ import {
 } from "@/components/icons";
 
 export const metadata = {
-  title: "Methodology & Limitations Statement — A11yLens Console",
+  title: "Methodology & Limitations Statement — AURA Console",
   description:
-    "Scientific methodology, evaluation formulas, ground-truthing protocols, and formal limitations statement for the VLM Accessibility Auditor.",
+    "Scientific methodology, evaluation formulas, ground-truthing protocols, and formal limitations statement for AURA: Accessibility Understanding and Remediation Assistant.",
 };
 
 export default function MethodologyPage() {
@@ -211,8 +211,8 @@ export default function MethodologyPage() {
         </h2>
         <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5 text-xs text-slate-300 leading-relaxed space-y-3">
           <p>
-            No automated AI model should unilaterally declare compliance. The A11yLens Console
-            enforces an adjudication loop where:
+            No automated AI model should unilaterally declare compliance. The AURA Console
+            (Accessibility Understanding and Remediation Assistant) enforces an adjudication loop where:
           </p>
           <ol className="list-decimal pl-5 space-y-1.5 font-mono">
             <li>Reviewers adjudicate candidate findings as Confirmed (TP) or Rejected (FP).</li>

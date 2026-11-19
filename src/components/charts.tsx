@@ -298,8 +298,8 @@ export function SeverityDriftMatrix({
                       : "bg-amber-500/15 text-amber-300 border border-amber-500/30";
 
                   return (
-                    <td key={hSev} className="p-1">
-                      <div className={`py-1.5 rounded-md ${cellBg}`}>{count}</div>
+                    <td key={hSev} className="p-1.5">
+                      <div className={`py-2.5 rounded-md text-[12px] ${cellBg}`}>{count}</div>
                     </td>
                   );
                 })}

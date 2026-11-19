@@ -18,6 +18,9 @@ import {
   CheckCircle2,
   Cpu,
   Sparkles,
+  Download,
+  FileText,
+  ThumbsUp,
   type LucideIcon,
 } from "@/components/icons";
 import Link from "next/link";
@@ -27,7 +30,12 @@ import { desc, eq, sql } from "drizzle-orm";
 import { computeMetrics } from "@/lib/metrics";
 import { ensureSeeded } from "@/lib/seed";
 import { checkVlmOnline } from "@/lib/analysis";
-import { OutcomeDonut, CalibrationBars, CategoryBars } from "@/components/charts";
+import {
+  OutcomeDonut,
+  CalibrationBars,
+  CategoryBars,
+  SeverityDriftMatrix,
+} from "@/components/charts";
 import { UploadZone } from "@/components/upload-zone";
 import { HeroTelemetryArtifact } from "@/components/hero-telemetry-artifact";
 import { MOCK_AUDITS, getMockMetrics, isMockDataEnabled } from "@/mocks/mock-data";
@@ -294,6 +302,38 @@ export default async function DashboardPage() {
               </p>
             </div>
           </div>
+
+          {/* Secondary Forensic Evaluation Strip */}
+          <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-hairline/60 border-t border-hairline/80 bg-surface-1/30 font-mono text-xs">
+            <div className="p-3.5 flex items-center justify-between">
+              <span className="text-[10.5px] text-inkdim uppercase">Avg Latency (Runtime)</span>
+              <span className="font-bold text-sky-400">
+                {metrics.avgAnalyzerMs ? `${metrics.avgAnalyzerMs} ms` : "—"}
+              </span>
+            </div>
+            <div className="p-3.5 flex items-center justify-between">
+              <span className="text-[10.5px] text-inkdim uppercase">Severity Agreement</span>
+              <span className="font-bold text-emerald-400">
+                {metrics.severityAgreement?.agreementRate != null
+                  ? fmtPct(metrics.severityAgreement.agreementRate)
+                  : "—"}
+              </span>
+            </div>
+            <div className="p-3.5 flex items-center justify-between">
+              <span className="text-[10.5px] text-inkdim uppercase">Remediation Score</span>
+              <span className="font-bold text-amber-400">
+                {metrics.remediationScore?.helpfulRate != null
+                  ? fmtPct(metrics.remediationScore.helpfulRate)
+                  : "—"}
+              </span>
+            </div>
+            <div className="p-3.5 flex items-center justify-between">
+              <span className="text-[10.5px] text-inkdim uppercase">F1-Score</span>
+              <span className="font-bold text-white">
+                {metrics.f1 != null ? fmtPct(metrics.f1) : "—"}
+              </span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -303,16 +343,16 @@ export default async function DashboardPage() {
           <SectionLabel badge="CALIBRATION FORENSICS">Model Reliability Diagnostics</SectionLabel>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {/* Outcomes distribution */}
           <div className="surface-card p-5 flex flex-col justify-between">
             <div>
               <h3 className="font-mono text-[13px] font-bold text-white flex items-center justify-between">
                 <span>Verification Verdicts</span>
-                <span className="text-[10px] text-brand">TP / FP / PENDING</span>
+                <span className="text-[10px] text-brand">TP / FP</span>
               </h3>
               <p className="text-[11.5px] text-inkdim mt-1">
-                Human adjudications across model claims and human-reported misses.
+                Human adjudications across model claims.
               </p>
             </div>
             <div className="mt-5">
@@ -324,11 +364,11 @@ export default async function DashboardPage() {
           <div className="surface-card p-5 flex flex-col justify-between">
             <div>
               <h3 className="font-mono text-[13px] font-bold text-white flex items-center justify-between">
-                <span>Confidence Calibration</span>
-                <span className="text-[10px] text-brand">RELIABILITY CURVE</span>
+                <span>Calibration</span>
+                <span className="text-[10px] text-brand">RELIABILITY</span>
               </h3>
               <p className="text-[11.5px] text-inkdim mt-1">
-                Observed confirmation rate vs reported confidence. Rising slope indicates honest scoring.
+                Observed confirmation rate vs reported confidence.
               </p>
             </div>
             <div className="mt-4">
@@ -340,15 +380,31 @@ export default async function DashboardPage() {
           <div className="surface-card p-5 flex flex-col justify-between">
             <div>
               <h3 className="font-mono text-[13px] font-bold text-white flex items-center justify-between">
-                <span>Precision by Category</span>
-                <span className="text-[10px] text-brand">LEVERAGE POINTS</span>
+                <span>By Category</span>
+                <span className="text-[10px] text-brand">PRECISION</span>
               </h3>
               <p className="text-[11.5px] text-inkdim mt-1">
-                Breakdown of categories where model exhibits highest reliability or over-flagging.
+                Breakdown of TP/FP precision rates across categories.
               </p>
             </div>
             <div className="mt-4">
               <CategoryBars perCategory={metrics.perCategory} />
+            </div>
+          </div>
+
+          {/* Severity Drift Matrix */}
+          <div className="surface-card p-5 flex flex-col justify-between">
+            <div>
+              <h3 className="font-mono text-[13px] font-bold text-white flex items-center justify-between">
+                <span>Severity Drift</span>
+                <span className="text-[10px] text-brand">ALIGNMENT</span>
+              </h3>
+              <p className="text-[11.5px] text-inkdim mt-1">
+                Model severity vs human-verified ground truth.
+              </p>
+            </div>
+            <div className="mt-4">
+              <SeverityDriftMatrix agreement={metrics.severityAgreement} />
             </div>
           </div>
         </div>
@@ -363,9 +419,28 @@ export default async function DashboardPage() {
               Artifacts Under Adjudication
             </h2>
           </div>
-          <span className="font-mono text-[11px] text-inkdim">
-            {auditRows.length} AUDITED ARTIFACTS
-          </span>
+          <div className="flex flex-wrap items-center gap-2 font-mono text-[11px]">
+            <span className="text-inkdim">{auditRows.length} AUDITED ARTIFACTS</span>
+            <span className="text-hairline">·</span>
+            <a
+              href="/api/export?format=csv"
+              download
+              className="inline-flex items-center gap-1 rounded border border-hairline bg-surface-1 px-2.5 py-1 text-inktext hover:border-brand/40 hover:text-brand transition shadow-sm"
+              title="Download entire dataset as CSV"
+            >
+              <Download size={11} />
+              DATASET CSV
+            </a>
+            <a
+              href="/api/export?format=json"
+              download
+              className="inline-flex items-center gap-1 rounded border border-hairline bg-surface-1 px-2.5 py-1 text-inktext hover:border-brand/40 hover:text-brand transition shadow-sm"
+              title="Download entire dataset as JSON"
+            >
+              <FileText size={11} />
+              DATASET JSON
+            </a>
+          </div>
         </div>
 
         <div className="grid gap-5 lg:grid-cols-[1fr_380px]">

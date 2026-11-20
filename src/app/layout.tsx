@@ -13,48 +13,47 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-ink text-inktext antialiased font-sans selection:bg-brand/25 selection:text-brand-light">
+      <body className="min-h-screen bg-[var(--color-paper)] text-[var(--color-ink)] antialiased font-sans">
         {/* Top telemetry bar */}
-        <div className="border-b border-hairline/80 bg-ink-950/90 text-[11px] font-mono text-inkdim px-6 py-1 flex items-center justify-between">
+        <div className="border-b border-[var(--color-rule)] bg-[var(--color-paper-2)] text-[11px] font-mono text-[var(--color-muted)] px-6 py-1.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1.5 text-brand">
-              <span className="h-1.5 w-1.5 rounded-full bg-brand animate-pulse" />
+            <span className="flex items-center gap-1.5 text-[var(--color-accent-ink)] font-semibold">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-accent)]" />
               <span>STATION: LOCAL-01</span>
             </span>
-            <span className="text-hairline">|</span>
-            <span className="hidden sm:inline text-white/80">ACTIVE ENGINE: QWEN2.5-VL · MULTIMODAL VLM</span>
-            <span className="text-hairline hidden md:inline">|</span>
+            <span className="text-[var(--color-rule)]">|</span>
+            <span className="hidden sm:inline text-[var(--color-ink)]">ACTIVE ENGINE: QWEN2.5-VL · MULTIMODAL VLM</span>
+            <span className="text-[var(--color-rule)] hidden md:inline">|</span>
             <span className="hidden md:inline">WCAG 2.2 AA/AAA BENCHMARK</span>
           </div>
           <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1.5 text-emerald-400">
+            <span className="flex items-center gap-1.5 text-[var(--color-green)] font-semibold">
               <ShieldCheck size={12} />
               <span>OFFLINE SAFE · AIRGAPPED</span>
             </span>
-            <span className="tabular hidden md:inline text-inkdim/70">
+            <span className="tabular hidden md:inline text-[var(--color-muted)]">
               BUILD 2026.11
             </span>
           </div>
         </div>
 
         {/* Main navigation header */}
-        <header className="sticky top-0 z-40 border-b border-hairline bg-ink-900/85 backdrop-blur-xl transition-all">
+        <header className="sticky top-0 z-40 border-b border-[var(--color-rule)] bg-[var(--color-paper-2)]/95 backdrop-blur-md transition-all">
           <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-            <Link href="/" className="group flex items-center gap-3.5">
-              <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand/20 to-brand-dark/30 ring-1 ring-brand/40 shadow-[0_0_15px_-3px_rgba(245,158,11,0.3)] transition group-hover:scale-105 group-hover:ring-brand">
-                <ScanEye size={19} className="text-brand-light transition group-hover:rotate-6" />
-                <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-400 ring-2 ring-ink" />
+            <Link href="/" className="group flex items-center gap-3">
+              <div className="relative flex h-8 w-8 items-center justify-center rounded-[6px] bg-[var(--color-accent)] text-[var(--color-accent-ink)] shadow-sm">
+                <ScanEye size={18} />
               </div>
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-[16px] font-bold tracking-tight text-white group-hover:text-brand-light transition">
+                  <span className="font-display text-[17px] font-bold tracking-tight text-[var(--color-ink)]">
                     AURA
                   </span>
-                  <span className="rounded bg-brand/10 border border-brand/25 px-1.5 py-0.2 text-[9px] font-mono font-semibold tracking-wider text-brand-light">
+                  <span className="rounded-[4px] bg-[var(--color-paper-3)] border border-[var(--color-rule)] px-1.5 py-0.2 text-[9.5px] font-mono font-medium text-[var(--color-muted)]">
                     AUDITOR
                   </span>
                 </div>
-                <span className="text-[10.5px] font-medium tracking-wide text-inkdim/90">
+                <span className="text-[11px] text-[var(--color-muted)] font-medium leading-none">
                   Accessibility Understanding and Remediation Assistant
                 </span>
               </div>
@@ -63,35 +62,35 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <nav className="flex items-center gap-1.5 sm:gap-2">
               <Link
                 href="/"
-                className="flex items-center gap-1.5 rounded-lg border border-transparent px-3 py-1.5 text-[12.5px] font-medium text-inktext/90 transition hover:border-hairline hover:bg-white/[0.04] hover:text-white"
+                className="flex items-center gap-1.5 rounded-[6px] px-3 py-1.5 text-[13px] font-medium text-[var(--color-ink)] hover:bg-[var(--color-paper-3)] transition"
               >
-                <Activity size={13} className="text-brand" />
+                <Activity size={13} className="text-[var(--color-accent-ink)]" />
                 <span>Console</span>
               </Link>
               <Link
                 href="/#queue"
-                className="rounded-lg border border-transparent px-3 py-1.5 text-[12.5px] font-medium text-inkdim transition hover:border-hairline hover:bg-white/[0.04] hover:text-white"
+                className="rounded-[6px] px-3 py-1.5 text-[13px] font-medium text-[var(--color-muted)] hover:text-[var(--color-ink)] hover:bg-[var(--color-paper-3)] transition"
               >
-                Inspection Queue
+                Inspection queue
               </Link>
               <Link
                 href="/#metrics"
-                className="rounded-lg border border-transparent px-3 py-1.5 text-[12.5px] font-medium text-inkdim transition hover:border-hairline hover:bg-white/[0.04] hover:text-white"
+                className="rounded-[6px] px-3 py-1.5 text-[13px] font-medium text-[var(--color-muted)] hover:text-[var(--color-ink)] hover:bg-[var(--color-paper-3)] transition"
               >
-                Calibration & ROC
+                Calibration ledger
               </Link>
               <Link
                 href="/methodology"
-                className="hidden sm:inline-flex rounded-lg border border-transparent px-3 py-1.5 text-[12.5px] font-medium text-inkdim transition hover:border-hairline hover:bg-white/[0.04] hover:text-white"
+                className="hidden sm:inline-flex rounded-[6px] px-3 py-1.5 text-[13px] font-medium text-[var(--color-muted)] hover:text-[var(--color-ink)] hover:bg-[var(--color-paper-3)] transition"
               >
-                Methodology & Limits
+                Methodology
               </Link>
-              <div className="ml-2 hidden h-4 w-px bg-hairline md:block" />
+              <div className="ml-2 hidden h-4 w-px bg-[var(--color-rule)] md:block" />
               <a
                 href="#upload"
-                className="ml-1 inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-brand via-amber-400 to-amber-500 px-3.5 py-1.5 text-[12px] font-semibold text-ink-950 shadow-[0_0_20px_-4px_rgba(245,158,11,0.5)] transition hover:brightness-110 active:scale-95"
+                className="btn btn--primary text-[12px] h-9 px-3.5"
               >
-                + New Audit
+                + Ingest new artifact
               </a>
             </nav>
           </div>
@@ -100,32 +99,32 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         {children}
 
         {/* Console footer */}
-        <footer className="border-t border-hairline/80 bg-ink-950/80">
-          <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-10 sm:flex-row sm:items-center sm:justify-between text-[12px] text-inkdim">
+        <footer className="border-t border-[var(--color-ink)] bg-[var(--color-paper-2)] mt-20">
+          <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-10 sm:flex-row sm:items-center sm:justify-between text-[12px] text-[var(--color-muted)]">
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
-                <span className="font-mono font-semibold text-white">AURA Console</span>
-                <span className="text-hairline">/</span>
-                <span>Vision-first accessibility ground-truthing</span>
+                <span className="font-display font-semibold text-[var(--color-ink)] text-[13px]">AURA Inspection Console</span>
+                <span className="text-[var(--color-rule)]">/</span>
+                <span>Empirical ground truth & verification</span>
               </div>
-              <p className="text-inkdim/70 max-w-md text-[11px] leading-relaxed">
-                Empirical adjudication system pairing local Qwen-VL with pixel-deterministic contrast, edge and colorimetric analysis.
+              <p className="max-w-md text-[11.5px] leading-relaxed text-[var(--color-muted)]">
+                Local Qwen-VL multimodal model paired with deterministic pixel engine contrast, edge, and colorimetric analysis.
               </p>
             </div>
             <div className="flex flex-col sm:items-end gap-1.5 font-mono text-[11px]">
               <div className="flex items-center gap-3">
-                <Link href="/methodology" className="hover:text-brand underline underline-offset-4 text-brand-light">
+                <Link href="/methodology" className="hover:underline text-[var(--color-ink)] font-medium">
                   Limitations Statement
                 </Link>
-                <span className="text-hairline">·</span>
-                <span className="flex items-center gap-1 text-emerald-400">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                <span className="text-[var(--color-rule)]">·</span>
+                <span className="flex items-center gap-1 text-[var(--color-green)] font-semibold">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-green)]" />
                   PRECISION BENCHMARK: PASS
                 </span>
-                <span className="text-hairline">·</span>
-                <span className="text-inktext/80">WCAG 2.2 CRITERIA</span>
+                <span className="text-[var(--color-rule)]">·</span>
+                <span className="text-[var(--color-ink)]">WCAG 2.2</span>
               </div>
-              <span className="text-inkdim/60">Strict human verification loop · No silent model guessing</span>
+              <span className="text-[var(--color-muted)]">Strict human verification loop · No silent guessing</span>
             </div>
           </div>
         </footer>

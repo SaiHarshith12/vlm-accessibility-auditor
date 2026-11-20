@@ -1,154 +1,202 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600;700&display=swap');
+/* Hallmark Theme: Furrow (Working Records) */
+@import url('https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@600;700&family=Red+Hat+Text:wght@400;500;600;700&family=Red+Hat+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  --font-sans: "Red Hat Text", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Red Hat Display", "Red Hat Text", ui-sans-serif, sans-serif;
+  --font-mono: "Red Hat Mono", ui-monospace, monospace;
 
-  /* Obsidian depth system */
-  --color-ink: #06080c;
-  --color-ink-950: #040508;
-  --color-ink-900: #090c13;
-  --color-ink-800: #0f1420;
+  /* Furrow Material Tokens */
+  --color-paper: oklch(96% 0.011 85);
+  --color-paper-2: oklch(99.5% 0.005 85);
+  --color-paper-3: oklch(92% 0.016 85);
+  --color-sheet: oklch(99.3% 0.004 85);
+
+  --color-ink: oklch(18% 0.006 60);
+  --color-ink-2: oklch(28% 0.008 60);
+  --color-muted: oklch(44% 0.012 60);
+  --color-rule: oklch(88% 0.013 85);
+
+  --color-accent: oklch(70% 0.19 40);
+  --color-accent-ink: oklch(18% 0.006 60);
+  --color-accent-soft: oklch(91% 0.05 50);
+  --color-focus: oklch(60% 0.19 40);
+
+  --color-green: oklch(48% 0.11 150);
+  --color-green-soft: oklch(92% 0.04 150);
+  --color-contour: oklch(62% 0.07 58);
+  --color-water: oklch(60% 0.05 232);
+  --color-hedge: oklch(50% 0.1 150);
+
+  --color-grid: oklch(90% 0.014 85);
+  --color-grid-strong: oklch(85% 0.018 85);
+
+  --color-vermilion: oklch(55% 0.22 25);
+  --color-vermilion-soft: oklch(93% 0.04 25);
+
+  /* Semantic mappings to preserve Tailwind utility harmony across existing pages */
+  --color-ink-950: var(--color-paper-3);
+  --color-ink-900: var(--color-paper-3);
+  --color-ink-800: var(--color-paper-3);
   
-  --color-surface-0: #090d15;
-  --color-surface-1: #0f1523;
-  --color-surface-2: #151d30;
-  --color-surface-3: #1d273f;
-  --color-surface-highlight: #283654;
+  --color-surface-0: var(--color-paper);
+  --color-surface-1: var(--color-paper-2);
+  --color-surface-2: var(--color-sheet);
+  --color-surface-3: var(--color-paper-3);
+  --color-surface-highlight: var(--color-paper-2);
 
-  /* Tactical High-Voltage Amber Palette */
-  --color-brand: #f59e0b;
-  --color-brand-light: #fbbf24;
-  --color-brand-bright: #fde68a;
-  --color-brand-dark: #b45309;
-  --color-brand-glow: rgba(245, 158, 11, 0.16);
+  --color-brand: var(--color-accent);
+  --color-brand-light: oklch(62% 0.18 40);
+  --color-brand-bright: oklch(55% 0.19 40);
+  --color-brand-dark: oklch(45% 0.16 40);
 
-  /* Functional Telemetry */
-  --color-pass: #10b981;
-  --color-pass-glow: rgba(16, 185, 129, 0.15);
-  --color-fail: #f43f5e;
-  --color-fail-glow: rgba(244, 63, 94, 0.15);
-  --color-warn: #f59e0b;
-  --color-info: #38bdf8;
-  --color-radar: #06b6d4;
+  --color-pass: var(--color-green);
+  --color-fail: var(--color-vermilion);
+  --color-warn: var(--color-accent);
+  --color-info: var(--color-water);
+  --color-radar: var(--color-water);
 
-  /* Typography Colors */
-  --color-inktext: #e2e8f0;
-  --color-inkmuted: #94a3b8;
-  --color-inkdim: #64748b;
+  --color-inktext: var(--color-ink);
+  --color-inkmuted: var(--color-muted);
+  --color-inkdim: oklch(50% 0.01 60);
 
-  /* Technical Hairlines */
-  --color-hairline: rgba(255, 255, 255, 0.08);
-  --color-hairline-light: rgba(255, 255, 255, 0.15);
-  --color-hairline-amber: rgba(245, 158, 11, 0.3);
+  --color-hairline: var(--color-rule);
+  --color-hairline-light: oklch(92% 0.01 85);
+  --color-hairline-amber: var(--color-accent);
+
+  --radius-card: 10px;
+  --radius-entry: 14px;
+  --radius-pill: 6px;
+  --rule-hair: 1px;
+}
+
+:root {
+  color-scheme: light;
+  --tracking-display: -0.035em;
+  --display-weight: 600;
+  --shadow-card: 0 1px 3px oklch(18% 0.006 60 / 0.06), 0 12px 24px -12px oklch(18% 0.006 60 / 0.12);
+  --shadow-lift: 0 1px 2px oklch(18% 0.006 60 / 0.08), 0 4px 12px -2px oklch(18% 0.006 60 / 0.12), 0 20px 32px -16px oklch(18% 0.006 60 / 0.18);
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
   scroll-behavior: smooth;
+  overflow-x: clip;
 }
 
 body {
-  background-color: var(--color-ink);
-  background-image: 
-    radial-gradient(ellipse 900px 500px at 50% -120px, rgba(245, 158, 11, 0.09), transparent 70%),
-    radial-gradient(ellipse 700px 400px at 90% 20%, rgba(6, 182, 212, 0.05), transparent 60%),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-    linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
-  background-position: center top, center top, -1px -1px, -1px -1px;
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  overflow-x: clip;
+  background-image:
+    linear-gradient(to right, var(--color-grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-grid) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: center top;
 }
 
 ::selection {
-  background: rgba(245, 158, 11, 0.3);
-  color: #fff;
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(245, 158, 11, 0.25) rgba(0, 0, 0, 0.2);
+  scrollbar-color: var(--color-rule) var(--color-paper);
 }
 
-.tabular {
+/* Red Hat Display Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  color: var(--color-ink);
+  letter-spacing: var(--tracking-display);
+}
+
+/* Numerics as Material */
+.tabular, .num {
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
 }
 
-/* Animations */
-@keyframes pulse-amber {
-  0%, 100% {
-    box-shadow: 0 0 15px -3px rgba(245, 158, 11, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 25px 0px rgba(245, 158, 11, 0.7);
-  }
-}
-
-.glow-amber {
-  animation: pulse-amber 3s infinite ease-in-out;
-}
-
-@keyframes sweep {
-  0% {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-  15% {
-    opacity: 1;
-  }
-  85% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(1000%);
-    opacity: 0;
-  }
-}
-
-.scanner-beam {
-  animation: sweep 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-
-@keyframes radar-sweep {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.radar-rotate {
-  animation: radar-sweep 6s linear infinite;
-}
-
-@keyframes blinkdot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.25; }
-}
-
-.blink {
-  animation: blinkdot 1.2s ease-in-out infinite;
-}
-
-/* Panel surface tokens */
+/* ── Furrow Surfaces & Cards ── */
 .surface-card {
-  background: linear-gradient(180deg, rgba(21, 29, 48, 0.6) 0%, rgba(15, 21, 35, 0.8) 100%);
-  border: 1px solid var(--color-hairline);
-  backdrop-filter: blur(12px);
-  border-radius: 14px;
+  background: var(--color-paper-2);
+  border: 1px solid var(--color-rule);
+  box-shadow: var(--shadow-card);
+  border-radius: var(--radius-card);
   position: relative;
 }
 
 .surface-card-hover {
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
 }
 
 .surface-card-hover:hover {
-  border-color: rgba(245, 158, 11, 0.4);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px -10px rgba(0, 0, 0, 0.6), 0 0 20px -5px rgba(245, 158, 11, 0.15);
+  border-color: var(--color-ink);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lift);
+}
+
+/* Waterproof notebook grid */
+.notebook {
+  background-image: 
+    linear-gradient(var(--color-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-grid) 1px, transparent 1px);
+  background-size: 8px 8px;
+  background-color: var(--color-paper-2);
+}
+
+/* Ruled ledger list */
+.ruled {
+  border-top: 1px solid var(--color-ink);
+}
+
+.ruled > * {
+  border-bottom: 1px solid var(--color-rule);
+}
+
+/* ── Furrow Moulded Keys / Buttons ── */
+.btn {
+  min-height: 44px;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-pill);
+  padding: 0 1rem;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  background: var(--color-paper-2);
+  color: var(--color-ink);
+  box-shadow: inset 0 1px 0 var(--color-sheet), 0 1px 2px oklch(18% 0.006 60 / 0.05);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 13px;
+  user-select: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn:hover {
+  border-color: var(--color-ink);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn--primary {
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  border-color: oklch(60% 0.18 40);
+  box-shadow: inset 0 1px 0 oklch(98% 0.02 50 / 0.4), 0 1px 2px oklch(18% 0.006 60 / 0.1);
+  font-weight: 600;
+}
+
+.btn--primary:hover {
+  filter: brightness(1.04);
 }
 
 /* Reticle brackets for technical HUD styling */
@@ -162,9 +210,8 @@ body {
   position: absolute;
   width: 8px;
   height: 8px;
-  border-color: rgba(245, 158, 11, 0.5);
+  border-color: var(--color-accent);
   pointer-events: none;
-  transition: border-color 0.2s ease;
 }
 
 .reticle-box::before {
@@ -181,61 +228,43 @@ body {
   border-right: 2px solid;
 }
 
-.reticle-box:hover::before,
-.reticle-box:hover::after {
-  border-color: #f59e0b;
-}
-
-/* Monospace telemetry tag */
-.telemetry-chip {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-/* Tactical Defect Bounding Box Windows */
+/* ── Tactical Defect Bounding Box Windows (Surveyor Plot Boundaries) ── */
 .bbox-window {
   position: absolute;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: auto;
 }
 
 .bbox-window-critical {
-  border: 2px solid #f43f5e;
-  background-color: rgba(244, 63, 94, 0.16);
-  box-shadow: 0 0 14px rgba(244, 63, 94, 0.35);
+  border: 2px solid var(--color-vermilion);
+  background-color: oklch(55% 0.22 25 / 0.12);
 }
 
 .bbox-window-major {
-  border: 2px solid #f59e0b;
-  background-color: rgba(245, 158, 11, 0.18);
-  box-shadow: 0 0 14px rgba(245, 158, 11, 0.35);
+  border: 2px solid var(--color-accent);
+  background-color: oklch(70% 0.19 40 / 0.12);
 }
 
 .bbox-window-minor {
-  border: 2px solid #06b6d4;
-  background-color: rgba(6, 182, 212, 0.14);
-  box-shadow: 0 0 14px rgba(6, 182, 212, 0.3);
+  border: 2px solid var(--color-water);
+  background-color: oklch(60% 0.05 232 / 0.12);
 }
 
 .bbox-window-human {
-  border: 2px dashed #a78bfa;
-  background-color: rgba(167, 139, 250, 0.16);
-  box-shadow: 0 0 14px rgba(167, 139, 250, 0.35);
+  border: 2px dashed oklch(50% 0.15 300);
+  background-color: oklch(50% 0.15 300 / 0.1);
 }
 
 .bbox-window-active {
-  outline: 2px solid #f59e0b;
-  outline-offset: 2px;
+  outline: 2px solid var(--color-ink);
+  outline-offset: 1px;
   z-index: 40 !important;
-  box-shadow: 0 0 25px rgba(245, 158, 11, 0.6), inset 0 0 15px rgba(245, 158, 11, 0.2);
+  box-shadow: 0 0 0 4px var(--color-accent);
 }
 
 .bbox-window:hover {
-  filter: brightness(1.2);
+  filter: brightness(0.95);
   z-index: 35;
 }
 
@@ -244,23 +273,20 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
-  border-radius: 6px;
+  border-radius: var(--radius-pill);
   padding: 0.25rem 0.5rem;
   font-family: var(--font-mono);
-  font-size: 10.5px;
-  font-weight: 600;
-  border: 1px solid var(--color-hairline);
-  background-color: rgba(15, 21, 35, 0.8);
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid var(--color-rule);
+  background-color: var(--color-paper-2);
+  color: var(--color-ink);
 }
 
 /* ─────────────────────────────────────────────────
-   PRINT / PDF EXPORT OVERRIDES
-   Applied when the user clicks "Print / PDF" in the
-   Remediation Report. Forces a readable white-paper
-   layout regardless of dark-mode Tailwind classes.
+   PRINT / PDF EXPORT OVERRIDES (Furrow Compliance Docket)
 ───────────────────────────────────────────────── */
 @media print {
-  /* Base reset to white paper */
   *,
   *::before,
   *::after {
@@ -273,69 +299,16 @@ body {
   body {
     background: #ffffff !important;
     color: #111111 !important;
-    font-family: system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif !important;
+    font-family: var(--font-sans) !important;
     font-size: 11pt !important;
   }
 
-  /* Kill dark backgrounds across all Tailwind surface / slate classes */
-  [class*="bg-slate"],
-  [class*="bg-surface"],
-  [class*="bg-ink"],
   .surface-card {
     background: #ffffff !important;
-    backdrop-filter: none !important;
+    box-shadow: none !important;
+    border: 1px solid #d1d5db !important;
   }
 
-  /* Make every dark text readable on white */
-  [class*="text-white"],
-  [class*="text-inktext"],
-  [class*="text-slate-100"],
-  [class*="text-slate-200"],
-  [class*="text-slate-300"] {
-    color: #111111 !important;
-  }
-
-  [class*="text-inkdim"],
-  [class*="text-slate-400"],
-  [class*="text-slate-500"] {
-    color: #555555 !important;
-  }
-
-  /* Keep accent colours legible */
-  [class*="text-amber"] { color: #b45309 !important; }
-  [class*="text-emerald"] { color: #065f46 !important; }
-  [class*="text-red"] { color: #991b1b !important; }
-  [class*="text-sky"],
-  [class*="text-cyan"] { color: #0369a1 !important; }
-  [class*="text-rose"] { color: #9f1239 !important; }
-
-  /* Borders */
-  [class*="border-slate"],
-  [class*="border-hairline"],
-  [class*="border-amber-950"],
-  [class*="border-surface"] {
-    border-color: #d1d5db !important;
-  }
-
-  /* Accent tinted backgrounds → very light tint */
-  [class*="bg-amber"],
-  [class*="bg-brand"] {
-    background: #fef3c7 !important;
-  }
-  [class*="bg-emerald"],
-  [class*="bg-green"] {
-    background: #d1fae5 !important;
-  }
-  [class*="bg-red"],
-  [class*="bg-rose"] {
-    background: #fee2e2 !important;
-  }
-  [class*="bg-sky"],
-  [class*="bg-cyan"] {
-    background: #e0f2fe !important;
-  }
-
-  /* Layout: single column, full width */
   .print\:hidden,
   header,
   .sticky { display: none !important; }
@@ -345,34 +318,15 @@ body {
     max-width: 100% !important;
   }
 
-  /* Two-col report layout → stack vertically */
-  .lg\:grid-cols-12,
-  [class*="lg:col-span"] {
-    display: block !important;
-    width: 100% !important;
-  }
-
-  /* Section breaks */
-  section { page-break-inside: avoid; }
-
-  /* Images: show print version, hide interactive version */
   .print-image-block { display: block !important; }
   .print-image-hide  { display: none  !important; }
 
-  /* Bounding-box overlays in interactive view: keep visible in print */
-  .absolute { position: absolute; }
-
-  /* Ensure cards never get sliced mid-page */
   .print\:break-inside-avoid,
   .break-inside-avoid {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }
 
-  /* Ensure image container is not clipped */
-  .overflow-hidden { overflow: visible !important; }
-
-  /* Page margins */
   @page {
     margin: 15mm 12mm;
     size: A4 portrait;

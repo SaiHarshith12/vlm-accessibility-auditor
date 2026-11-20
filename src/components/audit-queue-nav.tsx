@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -22,36 +21,36 @@ export interface AuditQueueNavProps {
 const FILTERS = [
   {
     key: "status",
-    label: "STATUS",
+    label: "Status",
     options: [
       { value: "", label: "All" },
       { value: "pending", label: "Awaiting" },
       { value: "done", label: "Verified" },
-      { value: "tp", label: "True Positive" },
+      { value: "tp", label: "True positive" },
     ],
   },
   {
     key: "kind",
-    label: "KIND",
+    label: "Artifact",
     options: [
       { value: "", label: "All" },
       { value: "poster", label: "Poster" },
-      { value: "ui_screenshot", label: "UI Screen" },
+      { value: "ui_screenshot", label: "UI frame" },
     ],
   },
   {
     key: "severity",
-    label: "SEVERITY",
+    label: "Severity",
     options: [
       { value: "", label: "All" },
-      { value: "critical", label: "Has Critical" },
-      { value: "major", label: "Has Major" },
-      { value: "minor", label: "Minor Only" },
+      { value: "critical", label: "Has critical" },
+      { value: "major", label: "Has major" },
+      { value: "minor", label: "Minor only" },
     ],
   },
   {
     key: "analyzer",
-    label: "ENGINE",
+    label: "Engine",
     options: [
       { value: "", label: "All" },
       { value: "qwen-vl", label: "Qwen-VL" },
@@ -61,33 +60,6 @@ const FILTERS = [
 ] as const;
 
 // ── Helper: build href preserving all params except the changed one ──────────
-
-function buildHref(
-  base: string,
-  currentFilters: AuditQueueNavProps["currentFilters"],
-  currentPage: number,
-  overrides: Record<string, string>
-): string {
-  const params = new URLSearchParams();
-  const all = {
-    page: String(currentPage),
-    status: currentFilters.status ?? "",
-    kind: currentFilters.kind ?? "",
-    severity: currentFilters.severity ?? "",
-    analyzer: currentFilters.analyzer ?? "",
-    ...overrides,
-  };
-  for (const [k, v] of Object.entries(all)) {
-    if (v && v !== "1" || (k === "page" && v !== "1")) {
-      // only include non-default values to keep URLs clean
-      if (k === "page" && v === "1") continue;
-      if (v) params.set(k, v);
-    }
-  }
-  const qs = params.toString();
-  return qs ? `${base}#queue` : `${base}#queue`;
-  // Note: we always scroll to #queue; params go in the URL before the hash
-}
 
 function filterHref(
   currentFilters: AuditQueueNavProps["currentFilters"],
@@ -102,7 +74,6 @@ function filterHref(
     analyzer: currentFilters.analyzer ?? "",
     [key]: value,
   };
-  // reset to page 1 when filters change
   for (const [k, v] of Object.entries(merged)) {
     if (v) params.set(k, v);
   }
@@ -145,24 +116,24 @@ export function AuditQueueNav({
   const visiblePages = getVisiblePages(currentPage, totalPages);
 
   const btnBase =
-    "inline-flex items-center justify-center rounded border font-mono text-[11px] font-semibold transition select-none";
+    "inline-flex items-center justify-center rounded-[6px] border font-sans text-[12px] font-medium transition select-none shadow-sm";
   const btnActive =
-    "border-brand bg-brand/15 text-brand-light";
+    "border-[var(--color-accent)] bg-[var(--color-accent)] text-[var(--color-accent-ink)] font-semibold";
   const btnInactive =
-    "border-hairline bg-surface-1 text-inktext hover:border-brand/40 hover:text-brand";
+    "border-[var(--color-rule)] bg-[var(--color-paper-2)] text-[var(--color-ink)] hover:border-[var(--color-ink)]";
   const btnDisabled =
-    "border-hairline/30 bg-surface-0 text-inkdim/40 cursor-not-allowed pointer-events-none";
-  const arrowSz = "h-7 w-7 text-[13px]";
-  const pageSz = "h-7 min-w-[28px] px-1.5";
+    "border-[var(--color-rule)] bg-[var(--color-paper-3)] text-[var(--color-muted)] cursor-not-allowed opacity-40 pointer-events-none";
+  const arrowSz = "h-8 w-8 text-[14px]";
+  const pageSz = "h-8 min-w-[32px] px-2";
 
   return (
-    <div className="mt-5 space-y-3">
+    <div className="mt-6 space-y-3 font-sans">
       {/* ── Filter chips ─────────────────────────────────────────────── */}
-      <div className="flex flex-wrap gap-x-4 gap-y-2">
+      <div className="flex flex-wrap gap-x-4 gap-y-2 text-[12px]">
         {FILTERS.map((f) => (
           <div key={f.key} className="flex items-center gap-1.5">
-            <span className="font-mono text-[9.5px] font-bold text-inkdim tracking-widest">
-              {f.label}
+            <span className="text-[11.5px] font-semibold text-[var(--color-muted)]">
+              {f.label}:
             </span>
             <div className="flex items-center gap-1">
               {f.options.map((opt) => {
@@ -174,8 +145,10 @@ export function AuditQueueNav({
                     key={opt.value}
                     href={filterHref(currentFilters, f.key, opt.value)}
                     scroll={false}
-                    className={`${btnBase} ${pageSz} ${
-                      active ? btnActive : btnInactive
+                    className={`h-7 px-2.5 rounded-[4px] border font-sans text-[11.5px] flex items-center justify-center transition ${
+                      active
+                        ? "bg-[var(--color-accent)] text-[var(--color-accent-ink)] border-[var(--color-accent)] font-semibold"
+                        : "bg-[var(--color-paper-2)] text-[var(--color-ink)] border-[var(--color-rule)] hover:border-[var(--color-ink)]"
                     }`}
                   >
                     {opt.label}
@@ -189,9 +162,9 @@ export function AuditQueueNav({
 
       {/* ── Pagination bar ───────────────────────────────────────────── */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-hairline/60 pt-3">
+        <div className="flex items-center justify-between border-t border-[var(--color-rule)] pt-3.5">
           {/* Left info */}
-          <span className="font-mono text-[10.5px] text-inkdim">
+          <span className="font-mono text-[11.5px] text-[var(--color-muted)]">
             PAGE {currentPage} / {totalPages} · {totalCount} TOTAL
           </span>
 
@@ -266,7 +239,7 @@ export function AuditQueueNav({
 
       {/* ── Empty state ──────────────────────────────────────────────── */}
       {totalCount === 0 && (
-        <p className="text-center font-mono text-[12px] text-inkdim py-8">
+        <p className="text-center font-sans text-[13px] text-[var(--color-muted)] py-8">
           No audits match the selected filters.
         </p>
       )}

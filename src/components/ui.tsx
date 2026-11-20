@@ -23,13 +23,13 @@ export function SectionLabel({
   badge?: string;
 }) {
   return (
-    <div className="flex items-center gap-2 mb-1">
-      <span className="h-1.5 w-1.5 rounded-sm bg-brand shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
-      <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-inkdim">
+    <div className="flex items-center gap-2 mb-1.5">
+      <span className="h-2 w-2 rounded-[2px] bg-[var(--color-accent)] shrink-0" />
+      <span className="font-sans text-[12px] font-semibold text-[var(--color-ink)]">
         {children}
       </span>
       {badge && (
-        <span className="rounded bg-brand/10 border border-brand/20 px-1.5 py-0.2 font-mono text-[9px] text-brand-light">
+        <span className="rounded-[4px] bg-[var(--color-paper-3)] border border-[var(--color-rule)] px-1.5 py-0.2 font-mono text-[9.5px] text-[var(--color-muted)]">
           {badge}
         </span>
       )}
@@ -39,22 +39,22 @@ export function SectionLabel({
 
 const SEV: Record<Severity, { dot: string; text: string; bg: string; border: string }> = {
   critical: {
-    dot: "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.7)]",
-    text: "text-rose-400",
-    bg: "bg-rose-500/[0.08]",
-    border: "border-rose-500/30",
+    dot: "bg-[var(--color-vermilion)]",
+    text: "text-[var(--color-vermilion)]",
+    bg: "bg-[var(--color-vermilion-soft)]",
+    border: "border-[var(--color-vermilion)]",
   },
   major: {
-    dot: "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.7)]",
-    text: "text-amber-300",
-    bg: "bg-amber-400/[0.08]",
-    border: "border-amber-400/30",
+    dot: "bg-[var(--color-accent)]",
+    text: "text-[var(--color-accent-ink)]",
+    bg: "bg-[var(--color-accent-soft)]",
+    border: "border-[var(--color-accent)]",
   },
   minor: {
-    dot: "bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.7)]",
-    text: "text-cyan-300",
-    bg: "bg-cyan-400/[0.08]",
-    border: "border-cyan-400/30",
+    dot: "bg-[var(--color-water)]",
+    text: "text-[var(--color-ink)]",
+    bg: "bg-[var(--color-paper-3)]",
+    border: "border-[var(--color-rule)]",
   },
 };
 
@@ -62,7 +62,7 @@ export function SeverityBadge({ severity }: { severity: string }) {
   const s = SEV[severity as Severity] ?? SEV.minor;
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider ${s.bg} ${s.border} ${s.text}`}
+      className={`inline-flex items-center gap-1.5 rounded-[4px] border px-2 py-0.5 font-sans text-[11px] font-medium capitalize ${s.bg} ${s.border} ${s.text}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
       {severity}
@@ -73,7 +73,7 @@ export function SeverityBadge({ severity }: { severity: string }) {
 export function CategoryChip({ category }: { category: string }) {
   const meta = CATEGORY_META[category as Category] ?? CATEGORY_META.other;
   return (
-    <span className="inline-flex items-center rounded-md border border-hairline bg-surface-2/80 px-2 py-0.5 font-mono text-[10.5px] text-inktext/90">
+    <span className="inline-flex items-center rounded-[4px] border border-[var(--color-rule)] bg-[var(--color-paper-2)] px-2 py-0.5 font-sans text-[11px] text-[var(--color-muted)] font-medium">
       {meta.label}
     </span>
   );
@@ -81,24 +81,24 @@ export function CategoryChip({ category }: { category: string }) {
 
 const STATUS_STYLE: Record<string, { cls: string; label: string; dot: string }> = {
   pending: {
-    cls: "text-amber-300 border-amber-400/30 bg-amber-400/[0.08]",
-    label: "Awaiting Review",
-    dot: "bg-amber-400 blink",
+    cls: "text-[var(--color-accent-ink)] border-[var(--color-accent)] bg-[var(--color-accent-soft)]",
+    label: "Awaiting review",
+    dot: "bg-[var(--color-accent)]",
   },
   confirmed: {
-    cls: "text-emerald-300 border-emerald-500/30 bg-emerald-500/[0.08]",
-    label: "True Positive",
-    dot: "bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.7)]",
+    cls: "text-[var(--color-green)] border-[var(--color-green)] bg-[var(--color-green-soft)]",
+    label: "True positive",
+    dot: "bg-[var(--color-green)]",
   },
   rejected: {
-    cls: "text-rose-300 border-rose-500/30 bg-rose-500/[0.08]",
-    label: "False Positive",
-    dot: "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.7)]",
+    cls: "text-[var(--color-vermilion)] border-[var(--color-vermilion)] bg-[var(--color-vermilion-soft)]",
+    label: "False alarm",
+    dot: "bg-[var(--color-vermilion)]",
   },
   uncertain: {
-    cls: "text-inkdim border-hairline bg-surface-2",
+    cls: "text-[var(--color-muted)] border-[var(--color-rule)] bg-[var(--color-paper-3)]",
     label: "Uncertain",
-    dot: "bg-inkdim",
+    dot: "bg-[var(--color-muted)]",
   },
 };
 
@@ -106,7 +106,7 @@ export function StatusBadge({ status }: { status: string }) {
   const conf = STATUS_STYLE[status] ?? STATUS_STYLE.pending;
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider ${conf.cls}`}
+      className={`inline-flex items-center gap-1.5 rounded-[4px] border px-2 py-0.5 font-sans text-[11px] font-medium ${conf.cls}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${conf.dot}`} />
       {conf.label}
@@ -124,11 +124,7 @@ export function AnalyzerChip({
   const isVlm = analyzer === "qwen-vl";
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider shadow-sm ${
-        isVlm
-          ? "border-violet-500/40 bg-violet-500/[0.12] text-violet-200"
-          : "border-brand/40 bg-brand/[0.1] text-brand-light"
-      }`}
+      className="inline-flex items-center gap-1.5 rounded-[4px] border border-[var(--color-rule)] bg-[var(--color-paper-2)] px-2 py-0.5 font-sans text-[11px] font-medium text-[var(--color-ink)] shadow-sm"
       title={
         isVlm
           ? "Findings produced by local Qwen2.5-VL model"
@@ -137,14 +133,14 @@ export function AnalyzerChip({
     >
       <span
         className={`h-1.5 w-1.5 rounded-full ${
-          isVlm ? "bg-violet-400 shadow-[0_0_6px_#c084fc]" : "bg-brand shadow-[0_0_6px_#f59e0b]"
+          isVlm ? "bg-[var(--color-accent)]" : "bg-[var(--color-water)]"
         }`}
       />
-      {isVlm ? "Qwen-VL · Local" : "Pixel Heuristics"}
+      {isVlm ? "Qwen-VL local" : "Pixel heuristics"}
       {online != null && (
         <span
           className={`ml-0.5 h-1.5 w-1.5 rounded-full ${
-            online ? "bg-emerald-400" : "bg-rose-500"
+            online ? "bg-[var(--color-green)]" : "bg-[var(--color-vermilion)]"
           }`}
         />
       )}
@@ -157,13 +153,13 @@ export function ConfidenceMeter({ value }: { value: number | null }) {
   const pct = Math.round(value * 100);
   return (
     <span className="inline-flex items-center gap-2">
-      <div className="relative h-1.5 w-20 overflow-hidden rounded-full bg-surface-2 border border-hairline">
+      <div className="relative h-1.5 w-16 overflow-hidden rounded-full bg-[var(--color-paper-3)] border border-[var(--color-rule)]">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-brand to-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.5)]"
+          className="h-full rounded-full bg-[var(--color-accent)]"
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="tabular font-mono text-[11px] font-bold text-brand-light">
+      <span className="tabular font-mono text-[11px] font-medium text-[var(--color-ink)]">
         {pct}%
       </span>
     </span>
@@ -183,96 +179,85 @@ export function ActiveModelBanner({
 
   if (compact) {
     return (
-      <div className="inline-flex items-center gap-2 rounded-lg border border-hairline bg-surface-1/90 px-3 py-1.5 font-mono text-[11px] shadow-sm">
+      <div className="inline-flex items-center gap-2 rounded-[6px] border border-[var(--color-rule)] bg-[var(--color-paper-2)] px-3 py-1.5 font-sans text-[12px] shadow-sm">
         <span className="flex h-2 w-2 relative">
           <span
-            className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-              isVlm ? "bg-violet-400" : "bg-brand"
-            }`}
-          />
-          <span
             className={`relative inline-flex rounded-full h-2 w-2 ${
-              isVlm ? "bg-violet-400" : "bg-brand"
+              isVlm ? "bg-[var(--color-accent)]" : "bg-[var(--color-water)]"
             }`}
           />
         </span>
-        <span className="text-inkdim uppercase font-semibold">Active Model:</span>
-        <span className={`font-bold ${isVlm ? "text-violet-300" : "text-brand-light"}`}>
+        <span className="text-[var(--color-muted)] font-medium">Active model:</span>
+        <span className="font-semibold text-[var(--color-ink)]">
           {isVlm ? "Qwen2.5-VL-3B (Local VLM)" : "Deterministic Pixel Engine"}
         </span>
-        <span className="text-inkdim/50">|</span>
-        <span className="text-[10px] text-emerald-400 font-medium">
-          {online ? "ONLINE · GPU/LOCAL" : "OFFLINE FALLBACK"}
+        <span className="text-[var(--color-rule)]">|</span>
+        <span className="text-[11px] text-[var(--color-green)] font-semibold">
+          {online ? "Online · local GPU" : "Offline fallback"}
         </span>
       </div>
     );
   }
 
   return (
-    <div className="surface-card p-4 border border-hairline/80 font-mono">
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-hairline/60">
+    <div className="surface-card p-4 border border-[var(--color-rule)] font-sans">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[var(--color-rule)]">
         <div className="flex items-center gap-2.5">
-          <div
-            className={`grid h-8 w-8 place-items-center rounded-lg border ${
-              isVlm
-                ? "border-violet-500/40 bg-violet-500/15 text-violet-300"
-                : "border-brand/40 bg-brand/15 text-brand"
-            }`}
-          >
-            <span className="text-[13px] font-bold">{isVlm ? "VL" : "PX"}</span>
+          <div className="grid h-8 w-8 place-items-center rounded-[6px] border border-[var(--color-rule)] bg-[var(--color-paper-3)] font-mono text-[11px] font-bold text-[var(--color-ink)]">
+            {isVlm ? "VL" : "PX"}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-inkdim uppercase font-bold tracking-wider">
-                Active Vision Model:
+              <span className="text-[11px] text-[var(--color-muted)] font-medium">
+                Active vision model:
               </span>
               <span
-                className={`inline-flex items-center gap-1 rounded px-1.5 py-0.2 text-[9px] font-bold uppercase ${
+                className={`inline-flex items-center gap-1 rounded-[4px] px-1.5 py-0.2 text-[10px] font-semibold ${
                   online
-                    ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
-                    : "bg-amber-500/15 text-amber-300 border border-amber-500/30"
+                    ? "bg-[var(--color-green-soft)] text-[var(--color-green)] border border-[var(--color-green)]"
+                    : "bg-[var(--color-accent-soft)] text-[var(--color-accent-ink)] border border-[var(--color-accent)]"
                 }`}
               >
-                <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse" />
-                {online ? "Model Operational" : "Standby"}
+                <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                {online ? "Operational" : "Standby"}
               </span>
             </div>
-            <h4 className="text-[13.5px] font-bold text-white tracking-tight">
+            <h4 className="text-[14px] font-bold text-[var(--color-ink)]">
               {isVlm ? "Qwen2.5-VL-3B Multimodal Engine" : "Airgapped Deterministic Pixel Engine"}
             </h4>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-[11px]">
-          <span className="rounded bg-surface-2 px-2.5 py-1 text-inktext border border-hairline">
-            {isVlm ? "Ollama / vLLM / OpenAI API" : "Sharp 320px Dual-Pass Filter"}
+        <div className="flex items-center gap-2 text-[11px] font-mono">
+          <span className="rounded-[4px] bg-[var(--color-paper-3)] px-2 py-0.5 text-[var(--color-ink)] border border-[var(--color-rule)]">
+            {isVlm ? "Ollama / OpenAI API" : "Sharp 320px dual-pass"}
           </span>
-          <span className="rounded bg-surface-2 px-2.5 py-1 text-brand-light border border-hairline">
+          <span className="rounded-[4px] bg-[var(--color-accent-soft)] px-2 py-0.5 text-[var(--color-accent-ink)] border border-[var(--color-accent)] font-semibold">
             WCAG 2.2 AA/AAA
           </span>
         </div>
       </div>
 
-      <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] sm:grid-cols-4 text-inkdim">
-        <div className="rounded border border-hairline/50 bg-surface-0/50 p-2">
-          <span className="text-[9px] uppercase tracking-wider block text-inkdim/70">Inference Mode</span>
-          <span className="text-white font-semibold mt-0.5 block">
+      <div className="mt-3 grid grid-cols-2 gap-2 text-[11.5px] sm:grid-cols-4 text-[var(--color-muted)]">
+        <div className="rounded-[6px] border border-[var(--color-rule)] bg-[var(--color-paper-3)] p-2">
+          <span className="text-[10px] block text-[var(--color-muted)]">Inference mode</span>
+          <span className="text-[var(--color-ink)] font-semibold mt-0.5 block">
             {isVlm ? "Spatial Visual Tokens" : "Direct Pixel Sampling"}
           </span>
         </div>
-        <div className="rounded border border-hairline/50 bg-surface-0/50 p-2">
-          <span className="text-[9px] uppercase tracking-wider block text-inkdim/70">Bounding Box Engine</span>
-          <span className="text-white font-semibold mt-0.5 block">
-            {isVlm ? "Normalized [0..1] Fractions" : "Sobel 8×8 Cluster Grids"}
+        <div className="rounded-[6px] border border-[var(--color-rule)] bg-[var(--color-paper-3)] p-2">
+          <span className="text-[10px] block text-[var(--color-muted)]">Bounding box engine</span>
+          <span className="text-[var(--color-ink)] font-semibold mt-0.5 block">
+            {isVlm ? "Normalized Fractions" : "Sobel 8×8 Cluster Grids"}
           </span>
         </div>
-        <div className="rounded border border-hairline/50 bg-surface-0/50 p-2">
-          <span className="text-[9px] uppercase tracking-wider block text-inkdim/70">Contrast Evaluation</span>
-          <span className="text-white font-semibold mt-0.5 block">Relative Luminance (sRGB)</span>
+        <div className="rounded-[6px] border border-[var(--color-rule)] bg-[var(--color-paper-3)] p-2">
+          <span className="text-[10px] block text-[var(--color-muted)]">Contrast evaluation</span>
+          <span className="text-[var(--color-ink)] font-semibold mt-0.5 block">Relative Luminance</span>
         </div>
-        <div className="rounded border border-hairline/50 bg-surface-0/50 p-2">
-          <span className="text-[9px] uppercase tracking-wider block text-inkdim/70">Adjudication Pipeline</span>
-          <span className="text-emerald-400 font-semibold mt-0.5 block">Write-Protected Ground Truth</span>
+        <div className="rounded-[6px] border border-[var(--color-rule)] bg-[var(--color-paper-3)] p-2">
+          <span className="text-[10px] block text-[var(--color-muted)]">Adjudication pipeline</span>
+          <span className="text-[var(--color-green)] font-semibold mt-0.5 block">Write-Protected Truth</span>
         </div>
       </div>
     </div>

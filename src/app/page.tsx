@@ -47,6 +47,7 @@ import {
   fmtPct,
   fmtDate,
 } from "@/components/ui";
+import { AuditQueueNav } from "@/components/audit-queue-nav";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -74,7 +75,20 @@ const PIPELINE_STEPS = [
   },
 ];
 
-export default async function DashboardPage() {
+const PAGE_SIZE = 2;
+
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string>>;
+}) {
+  const sp = await searchParams;
+  const rawPage = parseInt(sp.page ?? "1", 10);
+  const filterStatus = sp.status ?? "";
+  const filterKind = sp.kind ?? "";
+  const filterSeverity = sp.severity ?? "";
+  const filterAnalyzer = sp.analyzer ?? "";
+
   const useMock = isMockDataEnabled();
   let metrics;
   let vlmOnline = false;
@@ -128,6 +142,40 @@ export default async function DashboardPage() {
       }));
     }
   }
+
+  // ── Server-side filter ───────────────────────────────────────────────────
+  let filtered = auditRows as any[];
+
+  if (filterStatus) {
+    filtered = filtered.filter(({ audit: _a, ...c }: any) => {
+      if (filterStatus === "pending") return c.pending > 0;
+      if (filterStatus === "done") return c.pending === 0 && c.total > 0;
+      if (filterStatus === "tp") return c.confirmed > 0;
+      return true;
+    });
+  }
+  if (filterKind) {
+    filtered = filtered.filter(({ audit }: any) => audit.kind === filterKind);
+  }
+  if (filterSeverity) {
+    filtered = filtered.filter(({ audit: _a, ...c }: any) => {
+      if (filterSeverity === "critical") return c.critical > 0;
+      // For major/minor we approximate from counts – if no DB major field, skip
+      if (filterSeverity === "major") return c.critical === 0 && c.total > 0;
+      if (filterSeverity === "minor") return c.critical === 0 && c.total > 0;
+      return true;
+    });
+  }
+  if (filterAnalyzer) {
+    filtered = filtered.filter(({ audit }: any) => audit.analyzer === filterAnalyzer);
+  }
+
+  // ── Pagination ───────────────────────────────────────────────────────────
+  const totalCount = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const safePage = Math.min(Math.max(1, isNaN(rawPage) ? 1 : rawPage), totalPages);
+  const pageRows = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const currentFilters = { status: filterStatus, kind: filterKind, severity: filterSeverity, analyzer: filterAnalyzer };
 
   return (
     <main className="mx-auto max-w-7xl px-4 sm:px-6 pb-24">
@@ -420,7 +468,7 @@ export default async function DashboardPage() {
             </h2>
           </div>
           <div className="flex flex-wrap items-center gap-2 font-mono text-[11px]">
-            <span className="text-inkdim">{auditRows.length} AUDITED ARTIFACTS</span>
+            <span className="text-inkdim">{totalCount} AUDITED ARTIFACTS</span>
             <span className="text-hairline">·</span>
             <a
               href="/api/export?format=csv"
@@ -445,8 +493,9 @@ export default async function DashboardPage() {
 
         <div className="grid gap-5 lg:grid-cols-[1fr_380px]">
           {/* Left: Queue Grid */}
-          <div className="grid gap-3 sm:grid-cols-2">
-            {(auditRows as any[]).map(({ audit, ...c }) => {
+          <div className="flex flex-col">
+            <div className="grid gap-3 sm:grid-cols-2">
+              {(pageRows as any[]).map(({ audit, ...c }) => {
               const status =
                 c.pending > 0 ? "pending" : c.total > 0 ? "done" : "empty";
               const src = audit.imagePath ?? `/api/images/${audit.id}`;
@@ -540,6 +589,15 @@ export default async function DashboardPage() {
                 </Link>
               );
             })}
+            </div>
+
+            {/* Pagination + filter nav */}
+            <AuditQueueNav
+              currentPage={safePage}
+              totalPages={totalPages}
+              totalCount={totalCount}
+              currentFilters={currentFilters}
+            />
           </div>
 
           {/* Right: Upload Dropzone Frame */}

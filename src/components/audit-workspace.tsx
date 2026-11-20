@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -108,6 +108,53 @@ export function AuditWorkspace({
     return c;
   }, [findings]);
 
+  const sevCounts = useMemo(() => {
+    const s = { critical: 0, major: 0, minor: 0 };
+    for (const f of findings) {
+      if (f.severity in s) s[f.severity as keyof typeof s]++;
+    }
+    return s;
+  }, [findings]);
+
+  const [sevFilter, setSevFilter] = useState<"all" | "critical" | "major" | "minor">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "confirmed" | "rejected">("all");
+  const [viewMode, setViewMode] = useState<"single" | "list">("single");
+
+  const filteredFindings = useMemo(() => {
+    return findings.filter((f) => {
+      if (sevFilter !== "all" && f.severity !== sevFilter) return false;
+      if (statusFilter !== "all" && f.status !== statusFilter) return false;
+      return true;
+    });
+  }, [findings, sevFilter, statusFilter]);
+
+  const activeIndex = useMemo(() => {
+    if (!selectedId) return 0;
+    const idx = filteredFindings.findIndex((f) => f.id === selectedId);
+    return idx >= 0 ? idx : 0;
+  }, [filteredFindings, selectedId]);
+
+  const currentFinding = filteredFindings[activeIndex] ?? null;
+
+  useEffect(() => {
+    if (filteredFindings.length > 0) {
+      if (!selectedId || !filteredFindings.some((f) => f.id === selectedId)) {
+        setSelectedId(filteredFindings[0].id);
+      }
+    }
+  }, [filteredFindings, selectedId]);
+
+  const nextPendingId = useMemo(() => {
+    if (filteredFindings.length === 0) return null;
+    for (let i = activeIndex + 1; i < filteredFindings.length; i++) {
+      if (filteredFindings[i].status === "pending") return filteredFindings[i].id;
+    }
+    for (let i = 0; i < activeIndex; i++) {
+      if (filteredFindings[i].status === "pending") return filteredFindings[i].id;
+    }
+    return null;
+  }, [filteredFindings, activeIndex]);
+
   const withBusy = (id: string, fn: () => Promise<void>) => {
     setBusyIds((s) => new Set(s).add(id));
     void fn().finally(() =>
@@ -213,8 +260,22 @@ export function AuditWorkspace({
   };
 
   const select = (id: string) => {
-    setSelectedId((prev) => (prev === id ? null : id));
-    // Scroll the corresponding finding card into view smoothly
+    if (viewMode === "single") {
+      setSelectedId(id);
+    } else {
+      setSelectedId((prev) => (prev === id ? null : id));
+    }
+    const isFilteredOut = !findings
+      .filter((f) => {
+        if (sevFilter !== "all" && f.severity !== sevFilter) return false;
+        if (statusFilter !== "all" && f.status !== statusFilter) return false;
+        return true;
+      })
+      .some((f) => f.id === id);
+    if (isFilteredOut) {
+      setSevFilter("all");
+      setStatusFilter("all");
+    }
     const cardEl = document.getElementById(`finding-card-${id}`);
     if (cardEl) {
       cardEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -536,6 +597,192 @@ export function AuditWorkspace({
             </div>
           </div>
 
+          {/* Interactive Grouping, Filter & View Controls */}
+          {findings.length > 0 && (
+            <div className="surface-card p-3.5 space-y-3 font-mono text-[11px]">
+              {/* Top Row: View Mode Toggle & Single-View Stepper */}
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-hairline/60 pb-2.5">
+                {/* View Mode Pills */}
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-inkdim font-bold uppercase tracking-wider mr-1">VIEW:</span>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("single")}
+                    className={`rounded px-2.5 py-1 font-semibold transition border ${
+                      viewMode === "single"
+                        ? "border-brand bg-brand/15 text-brand-light"
+                        : "border-hairline bg-surface-1 text-inkdim hover:text-white"
+                    }`}
+                  >
+                    Single Focus
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("list")}
+                    className={`rounded px-2.5 py-1 font-semibold transition border ${
+                      viewMode === "list"
+                        ? "border-brand bg-brand/15 text-brand-light"
+                        : "border-hairline bg-surface-1 text-inkdim hover:text-white"
+                    }`}
+                  >
+                    List ({filteredFindings.length})
+                  </button>
+                </div>
+
+                {/* Single View Stepper Controls */}
+                {viewMode === "single" && filteredFindings.length > 0 && (
+                  <div className="flex items-center gap-1.5 ml-auto">
+                    {/* « First */}
+                    <button
+                      type="button"
+                      disabled={activeIndex <= 0}
+                      onClick={() => setSelectedId(filteredFindings[0].id)}
+                      title="First finding"
+                      className="h-7 w-7 rounded border border-hairline bg-surface-1 text-inkdim hover:text-brand hover:border-brand/40 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center font-bold"
+                    >
+                      «
+                    </button>
+                    {/* ‹ Prev */}
+                    <button
+                      type="button"
+                      disabled={activeIndex <= 0}
+                      onClick={() => setSelectedId(filteredFindings[Math.max(0, activeIndex - 1)].id)}
+                      title="Previous finding"
+                      className="h-7 w-7 rounded border border-hairline bg-surface-1 text-inkdim hover:text-brand hover:border-brand/40 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center font-bold text-[13px]"
+                    >
+                      ‹
+                    </button>
+
+                    {/* Counter readout */}
+                    <span className="px-2 py-0.5 rounded bg-surface-2 border border-hairline text-white font-bold tabular text-[10.5px]">
+                      #{String(activeIndex + 1).padStart(2, "0")} / {String(filteredFindings.length).padStart(2, "0")}
+                    </span>
+
+                    {/* › Next */}
+                    <button
+                      type="button"
+                      disabled={activeIndex >= filteredFindings.length - 1}
+                      onClick={() =>
+                        setSelectedId(
+                          filteredFindings[Math.min(filteredFindings.length - 1, activeIndex + 1)].id
+                        )
+                      }
+                      title="Next finding"
+                      className="h-7 w-7 rounded border border-hairline bg-surface-1 text-inkdim hover:text-brand hover:border-brand/40 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center font-bold text-[13px]"
+                    >
+                      ›
+                    </button>
+                    {/* » Last */}
+                    <button
+                      type="button"
+                      disabled={activeIndex >= filteredFindings.length - 1}
+                      onClick={() =>
+                        setSelectedId(filteredFindings[filteredFindings.length - 1].id)
+                      }
+                      title="Last finding"
+                      className="h-7 w-7 rounded border border-hairline bg-surface-1 text-inkdim hover:text-brand hover:border-brand/40 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center font-bold"
+                    >
+                      »
+                    </button>
+
+                    {/* Next Pending Shortcut */}
+                    {nextPendingId && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedId(nextPendingId)}
+                        title="Jump to next pending finding needing review"
+                        className="ml-1 inline-flex items-center gap-1 rounded bg-amber-400/10 border border-amber-400/40 px-2 py-1 text-[10px] font-bold text-amber-300 hover:bg-amber-400/20 transition"
+                      >
+                        <span>Next Pending</span>
+                        <span>→</span>
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Filter Chips Rows */}
+              <div className="space-y-2">
+                {/* Severity Filter Row */}
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-[10px] text-inkdim font-bold uppercase tracking-wider mr-1">SEVERITY:</span>
+                  {(
+                    [
+                      ["all", `All (${findings.length})`],
+                      ["critical", `Critical (${sevCounts.critical})`],
+                      ["major", `Major (${sevCounts.major})`],
+                      ["minor", `Minor (${sevCounts.minor})`],
+                    ] as const
+                  ).map(([val, label]) => {
+                    const active = sevFilter === val;
+                    return (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => setSevFilter(val)}
+                        className={`rounded px-2 py-0.5 text-[10px] font-medium transition border ${
+                          active
+                            ? val === "critical"
+                              ? "bg-rose-500/20 text-rose-300 border-rose-500/50 font-bold"
+                              : val === "major"
+                              ? "bg-amber-400/20 text-amber-200 border-amber-400/50 font-bold"
+                              : val === "minor"
+                              ? "bg-cyan-400/20 text-cyan-200 border-cyan-400/50 font-bold"
+                              : "bg-brand/15 text-brand-light border-brand/50 font-bold"
+                            : "bg-surface-1 border-hairline text-inkdim hover:text-white"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Status Filter Row */}
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-[10px] text-inkdim font-bold uppercase tracking-wider mr-1">STATUS:</span>
+                  {(
+                    [
+                      ["all", "All"],
+                      ["pending", `Awaiting (${counts.pending})`],
+                      ["confirmed", `TP (${counts.confirmed})`],
+                      ["rejected", `FP (${counts.rejected})`],
+                    ] as const
+                  ).map(([val, label]) => {
+                    const active = statusFilter === val;
+                    return (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => setStatusFilter(val)}
+                        className={`rounded px-2 py-0.5 text-[10px] font-medium transition border ${
+                          active
+                            ? "bg-brand/15 text-brand-light border-brand/50 font-bold"
+                            : "bg-surface-1 border-hairline text-inkdim hover:text-white"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+
+                  {(sevFilter !== "all" || statusFilter !== "all") && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSevFilter("all");
+                        setStatusFilter("all");
+                      }}
+                      className="ml-auto text-[10px] text-inkdim hover:text-rose-400 underline"
+                    >
+                      Reset filters
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Finding Cards List */}
           <div className="space-y-3">
             {findings.length === 0 && (
@@ -548,7 +795,27 @@ export function AuditWorkspace({
               </div>
             )}
 
-            {findings.map((f, i) => {
+            {findings.length > 0 && filteredFindings.length === 0 && (
+              <div className="surface-card p-8 text-center font-mono">
+                <p className="text-[13px] font-bold text-white">No findings match the current filters</p>
+                <p className="mt-1 text-[11px] text-inkdim">
+                  Try adjusting the severity or status filters above.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSevFilter("all");
+                    setStatusFilter("all");
+                  }}
+                  className="mt-3 inline-flex items-center gap-1 rounded border border-brand/40 bg-brand/10 px-3 py-1 text-[11px] font-bold text-brand hover:bg-brand/20 transition"
+                >
+                  Clear Filters
+                </button>
+              </div>
+            )}
+
+            {(viewMode === "single" && currentFinding ? [currentFinding] : filteredFindings).map((f) => {
+              const originalIndex = findings.findIndex((item) => item.id === f.id);
               const active = selectedId === f.id;
               const busy = busyIds.has(f.id);
               const human = f.source === "human";
@@ -569,7 +836,7 @@ export function AuditWorkspace({
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex flex-wrap items-center gap-1.5">
                       <span className="tabular font-mono text-[11px] font-bold text-inkdim">
-                        #{String(i + 1).padStart(2, "0")}
+                        #{String(originalIndex + 1).padStart(2, "0")}
                       </span>
                       <SeverityBadge severity={f.severity} />
                       <CategoryChip category={f.category} />
@@ -595,7 +862,7 @@ export function AuditWorkspace({
                         title="Click to locate on picture"
                       >
                         <Crosshair size={10} className="text-brand" />
-                        <span>Window #{String(i + 1).padStart(2, "0")}</span>
+                        <span>Window #{String(originalIndex + 1).padStart(2, "0")}</span>
                       </span>
                     )}
                   </h3>
@@ -770,6 +1037,37 @@ export function AuditWorkspace({
                 </article>
               );
             })}
+
+            {/* Bottom Quick-Stepper for Single Focus View */}
+            {viewMode === "single" && filteredFindings.length > 1 && (
+              <div className="flex items-center justify-between font-mono text-[11px] pt-1 px-1">
+                <button
+                  type="button"
+                  disabled={activeIndex <= 0}
+                  onClick={() => setSelectedId(filteredFindings[Math.max(0, activeIndex - 1)].id)}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-surface-1 px-3 py-1.5 text-inkdim hover:text-brand hover:border-brand/40 disabled:opacity-30 disabled:pointer-events-none transition"
+                >
+                  <span>‹ Previous Finding</span>
+                </button>
+
+                <span className="text-[10.5px] text-inkdim tabular">
+                  Finding {activeIndex + 1} of {filteredFindings.length}
+                </span>
+
+                <button
+                  type="button"
+                  disabled={activeIndex >= filteredFindings.length - 1}
+                  onClick={() =>
+                    setSelectedId(
+                      filteredFindings[Math.min(filteredFindings.length - 1, activeIndex + 1)].id
+                    )
+                  }
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-surface-1 px-3 py-1.5 text-inkdim hover:text-brand hover:border-brand/40 disabled:opacity-30 disabled:pointer-events-none transition"
+                >
+                  <span>Next Finding ›</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Add Missed Issue (False Negative) */}

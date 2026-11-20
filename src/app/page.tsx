@@ -55,22 +55,22 @@ export const runtime = "nodejs";
 const PIPELINE_STEPS = [
   {
     step: "01",
-    name: "Vision Detection",
+    name: "Vision detection",
     desc: "Local Qwen-VL multimodal model detects defects; fallback to deterministic contrast & edge engine if offline.",
   },
   {
     step: "02",
-    name: "Grounded Explanation",
+    name: "Grounded explanation",
     desc: "Each claim is mapped to exact WCAG 2.2 criterion with pixel bounding box, confidence score and suggested fix.",
   },
   {
     step: "03",
-    name: "Human Adjudication",
+    name: "Human adjudication",
     desc: "Reviewers verify findings as True Positive, False Positive, or log missed issues (False Negatives).",
   },
   {
     step: "04",
-    name: "Empirical Scoring",
+    name: "Empirical scoring",
     desc: "Precision, Recall, F1 and confidence calibration are computed in real time from verified ground truth.",
   },
 ];
@@ -160,7 +160,6 @@ export default async function DashboardPage({
   if (filterSeverity) {
     filtered = filtered.filter(({ audit: _a, ...c }: any) => {
       if (filterSeverity === "critical") return c.critical > 0;
-      // For major/minor we approximate from counts – if no DB major field, skip
       if (filterSeverity === "major") return c.critical === 0 && c.total > 0;
       if (filterSeverity === "minor") return c.critical === 0 && c.total > 0;
       return true;
@@ -183,34 +182,30 @@ export default async function DashboardPage({
       <section className="py-10 lg:py-14 grid gap-10 lg:grid-cols-[1.1fr_1.1fr] lg:items-center">
         <div className="space-y-6">
           {/* Status and architecture tag */}
-          <div className="space-y-3 font-mono text-[11px]">
+          <div className="space-y-3 font-sans text-[12px]">
             <ActiveModelBanner
               analyzer={vlmOnline ? "qwen-vl" : "heuristic"}
               online={vlmOnline}
               compact={true}
             />
             {useMock && (
-              <div className="flex items-center gap-2 text-inkdim text-[11px]">
-                <span className="rounded bg-brand/15 border border-brand/40 px-2 py-0.5 text-brand-light font-bold">
+              <div className="flex items-center gap-2 text-[var(--color-muted)] text-[11px] font-mono">
+                <span className="rounded-[4px] bg-[var(--color-accent-soft)] border border-[var(--color-accent)] px-2 py-0.5 text-[var(--color-accent-ink)] font-bold">
                   TESTING MOCK DATASET ACTIVE
                 </span>
                 <span>/</span>
-                <span>Self-contained standalone evaluation mode</span>
+                <span>Standalone evaluation mode</span>
               </div>
             )}
           </div>
 
-          {/* Punchy Hero Title */}
+          {/* Headline in sentence case, Red Hat Display 600 */}
           <div className="space-y-3">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-[1.08]">
-              Accessibility audits grounded in{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand via-amber-300 to-amber-500">
-                empirical vision evidence
-              </span>
-              .
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-[var(--color-ink)] leading-[1.1]">
+              Accessibility audits grounded in empirical vision evidence.
             </h1>
-            <p className="text-[15px] sm:text-[16px] leading-relaxed text-inkmuted max-w-xl">
-              Eliminate AI hallucination from accessibility compliance. AURA (Accessibility Understanding and Remediation Assistant) runs a local vision-language model to ground every defect in exact bounding boxes, calculates contrast and edge metrics, and feeds a human verification loop so precision and recall are <strong className="text-white">measured, never assumed</strong>.
+            <p className="text-[15px] sm:text-[16px] leading-relaxed text-[var(--color-muted)] max-w-xl font-sans">
+              Eliminate AI hallucination from accessibility compliance. AURA (Accessibility Understanding and Remediation Assistant) runs a local vision-language model to ground every defect in exact bounding boxes, calculates contrast and edge metrics, and feeds a human verification loop so precision and recall are <strong className="text-[var(--color-ink)] font-semibold">measured, never assumed</strong>.
             </p>
           </div>
 
@@ -218,27 +213,27 @@ export default async function DashboardPage({
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <a
               href="#upload"
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-brand via-amber-400 to-amber-500 px-5 py-3 text-[13px] font-mono font-bold text-ink-950 shadow-[0_0_25px_-4px_rgba(245,158,11,0.6)] transition hover:brightness-110 active:scale-95"
+              className="btn btn--primary h-11 px-5 text-[13px]"
             >
               <Sparkles size={16} />
-              <span>Launch New Audit</span>
+              <span>Launch new audit</span>
               <ArrowRight size={15} />
             </a>
             <a
               href="#queue"
-              className="inline-flex items-center gap-2 rounded-xl border border-hairline bg-surface-1/70 px-4 py-3 text-[13px] font-mono font-medium text-inktext transition hover:border-brand/50 hover:bg-surface-2 hover:text-white"
+              className="btn h-11 px-4 text-[13px]"
             >
-              <ListChecks size={15} className="text-brand" />
-              <span>Review Audit Queue ({auditRows.length})</span>
+              <ListChecks size={15} className="text-[var(--color-accent)]" />
+              <span>Review audit queue ({auditRows.length})</span>
             </a>
           </div>
 
           {/* Pipeline stages micro-strip */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-4 border-t border-hairline/60">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-4 border-t border-[var(--color-rule)]">
             {PIPELINE_STEPS.map((p) => (
-              <div key={p.step} className="rounded-lg bg-surface-1/40 border border-hairline/60 p-2.5">
-                <span className="font-mono text-[10px] font-bold text-brand">{p.step}</span>
-                <p className="font-mono text-[11px] font-semibold text-white mt-0.5">{p.name}</p>
+              <div key={p.step} className="rounded-[6px] bg-[var(--color-paper-2)] border border-[var(--color-rule)] p-2.5 shadow-sm">
+                <span className="font-mono text-[10px] font-bold text-[var(--color-accent-ink)] bg-[var(--color-accent-soft)] px-1.5 py-0.5 rounded-[3px]">{p.step}</span>
+                <p className="font-sans text-[12px] font-semibold text-[var(--color-ink)] mt-1.5">{p.name}</p>
               </div>
             ))}
           </div>
@@ -250,134 +245,134 @@ export default async function DashboardPage({
         </div>
       </section>
 
-      {/* ── MISSION CONTROL TELEMETRY METRICS RIBBON ── */}
+      {/* ── MISSION CONTROL TELEMETRY METRICS RIBBON (CALIBRATION LEDGER) ── */}
       <section className="mt-8 mb-12">
         <div className="mb-3 flex items-center justify-between">
-          <SectionLabel badge="REAL-TIME BENCHMARKS">System Telemetry & Ground Truth</SectionLabel>
-          <span className="font-mono text-[11px] text-inkdim hidden sm:inline">
+          <SectionLabel badge="CALIBRATION LEDGER">System Telemetry & Ground Truth</SectionLabel>
+          <span className="font-mono text-[11px] text-[var(--color-muted)] hidden sm:inline">
             N = {metrics.totals.findings} EVALUATED CLAIMS
           </span>
         </div>
 
-        <div className="rounded-2xl border border-hairline bg-surface-0/80 shadow-xl overflow-hidden backdrop-blur-xl">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 divide-y lg:divide-y-0 divide-x divide-hairline/80 font-mono">
+        <div className="surface-card overflow-hidden">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 divide-y lg:divide-y-0 divide-x divide-[var(--color-rule)] font-sans">
             {/* Artifacts */}
             <div className="p-4 sm:p-5 flex flex-col justify-between">
-              <div className="flex items-center justify-between text-inkdim text-[10.5px]">
+              <div className="flex items-center justify-between text-[var(--color-muted)] text-[11px] font-semibold">
                 <span>ARTIFACTS</span>
-                <ScanSearch size={14} className="text-brand" />
+                <ScanSearch size={14} className="text-[var(--color-accent)]" />
               </div>
-              <p className="text-2xl sm:text-3xl font-bold text-white mt-2 tabular">
+              <p className="text-2xl sm:text-3xl font-bold text-[var(--color-ink)] mt-2 font-mono tabular">
                 {metrics.totals.audits}
               </p>
-              <p className="text-[10px] text-inkdim mt-1 truncate">
+              <p className="text-[11px] text-[var(--color-muted)] mt-1 truncate">
                 {metrics.totals.findings} total findings
               </p>
             </div>
 
             {/* Awaiting Review */}
             <div className="p-4 sm:p-5 flex flex-col justify-between">
-              <div className="flex items-center justify-between text-inkdim text-[10.5px]">
+              <div className="flex items-center justify-between text-[var(--color-muted)] text-[11px] font-semibold">
                 <span>IN REVIEW QUEUE</span>
-                <Hourglass size={14} className="text-amber-400" />
+                <Hourglass size={14} className="text-[var(--color-accent)]" />
               </div>
-              <p className="text-2xl sm:text-3xl font-bold text-amber-300 mt-2 tabular">
+              <p className="text-2xl sm:text-3xl font-bold text-[var(--color-accent-ink)] mt-2 font-mono tabular">
                 {metrics.totals.pendingReview}
               </p>
-              <p className="text-[10px] text-amber-400/80 mt-1 truncate">
+              <p className="text-[11px] text-[var(--color-muted)] mt-1 truncate">
                 {metrics.totals.needsReviewAudits} audits awaiting review
               </p>
             </div>
 
             {/* Precision */}
-            <div className="p-4 sm:p-5 flex flex-col justify-between bg-surface-1/40">
-              <div className="flex items-center justify-between text-inkdim text-[10.5px]">
-                <span className="text-emerald-400">PRECISION (TP RATE)</span>
-                <Crosshair size={14} className="text-emerald-400" />
+            <div className="p-4 sm:p-5 flex flex-col justify-between bg-[var(--color-paper-3)]/40">
+              <div className="flex items-center justify-between text-[var(--color-green)] text-[11px] font-semibold">
+                <span>PRECISION (TP RATE)</span>
+                <Crosshair size={14} className="text-[var(--color-green)]" />
               </div>
-              <p className="text-2xl sm:text-3xl font-bold text-emerald-400 mt-2 tabular">
+              <p className="text-2xl sm:text-3xl font-bold text-[var(--color-green)] mt-2 font-mono tabular">
                 {metrics.precision != null ? fmtPct(metrics.precision) : "—"}
               </p>
-              <p className="text-[10px] text-inkdim mt-1 truncate">
+              <p className="text-[11px] text-[var(--color-muted)] mt-1 truncate">
                 TP / (TP + FP) reviewed
               </p>
             </div>
 
             {/* Recall */}
-            <div className="p-4 sm:p-5 flex flex-col justify-between bg-surface-1/40">
-              <div className="flex items-center justify-between text-inkdim text-[10.5px]">
-                <span className="text-cyan-400">RECALL (COVERAGE)</span>
-                <Radius size={14} className="text-cyan-400" />
+            <div className="p-4 sm:p-5 flex flex-col justify-between bg-[var(--color-paper-3)]/40">
+              <div className="flex items-center justify-between text-[var(--color-water)] text-[11px] font-semibold">
+                <span>RECALL (COVERAGE)</span>
+                <Radius size={14} className="text-[var(--color-water)]" />
               </div>
-              <p className="text-2xl sm:text-3xl font-bold text-cyan-300 mt-2 tabular">
+              <p className="text-2xl sm:text-3xl font-bold text-[var(--color-water)] mt-2 font-mono tabular">
                 {metrics.recall != null ? fmtPct(metrics.recall) : "—"}
               </p>
-              <p className="text-[10px] text-inkdim mt-1 truncate">
+              <p className="text-[11px] text-[var(--color-muted)] mt-1 truncate">
                 {metrics.confusion.fn === 0 ? "Zero logged misses" : `${metrics.confusion.fn} false negatives`}
               </p>
             </div>
 
             {/* False Alarm Share */}
             <div className="p-4 sm:p-5 flex flex-col justify-between">
-              <div className="flex items-center justify-between text-inkdim text-[10.5px]">
+              <div className="flex items-center justify-between text-[var(--color-muted)] text-[11px] font-semibold">
                 <span>FALSE ALARM (FP)</span>
-                <ShieldAlert size={14} className="text-rose-400" />
+                <ShieldAlert size={14} className="text-[var(--color-vermilion)]" />
               </div>
               <p
-                className={`text-2xl sm:text-3xl font-bold mt-2 tabular ${metrics.fpShare != null && metrics.fpShare > 0.3
-                  ? "text-rose-400"
-                  : "text-white"
+                className={`text-2xl sm:text-3xl font-bold mt-2 font-mono tabular ${metrics.fpShare != null && metrics.fpShare > 0.3
+                  ? "text-[var(--color-vermilion)]"
+                  : "text-[var(--color-ink)]"
                   }`}
               >
                 {metrics.fpShare != null ? fmtPct(metrics.fpShare) : "—"}
               </p>
-              <p className="text-[10px] text-inkdim mt-1 truncate">
+              <p className="text-[11px] text-[var(--color-muted)] mt-1 truncate">
                 FP / total reviewed
               </p>
             </div>
 
             {/* Audits Verified */}
             <div className="p-4 sm:p-5 flex flex-col justify-between">
-              <div className="flex items-center justify-between text-inkdim text-[10.5px]">
+              <div className="flex items-center justify-between text-[var(--color-muted)] text-[11px] font-semibold">
                 <span>CLOSED AUDITS</span>
-                <ListChecks size={14} className="text-white" />
+                <ListChecks size={14} className="text-[var(--color-ink)]" />
               </div>
-              <p className="text-2xl sm:text-3xl font-bold text-white mt-2 tabular">
+              <p className="text-2xl sm:text-3xl font-bold text-[var(--color-ink)] mt-2 font-mono tabular">
                 {metrics.totals.verifiedAudits}
               </p>
-              <p className="text-[10px] text-inkdim mt-1 truncate">
+              <p className="text-[11px] text-[var(--color-muted)] mt-1 truncate">
                 100% adjudicated
               </p>
             </div>
           </div>
 
           {/* Secondary Forensic Evaluation Strip */}
-          <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-hairline/60 border-t border-hairline/80 bg-surface-1/30 font-mono text-xs">
+          <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-[var(--color-rule)] border-t border-[var(--color-rule)] bg-[var(--color-paper-3)]/30 font-sans text-xs">
             <div className="p-3.5 flex items-center justify-between">
-              <span className="text-[10.5px] text-inkdim uppercase">Avg Latency (Runtime)</span>
-              <span className="font-bold text-sky-400">
+              <span className="text-[11px] text-[var(--color-muted)]">Avg runtime latency</span>
+              <span className="font-bold text-[var(--color-ink)] font-mono">
                 {metrics.avgAnalyzerMs ? `${metrics.avgAnalyzerMs} ms` : "—"}
               </span>
             </div>
             <div className="p-3.5 flex items-center justify-between">
-              <span className="text-[10.5px] text-inkdim uppercase">Severity Agreement</span>
-              <span className="font-bold text-emerald-400">
+              <span className="text-[11px] text-[var(--color-muted)]">Severity agreement</span>
+              <span className="font-bold text-[var(--color-green)] font-mono">
                 {metrics.severityAgreement?.agreementRate != null
                   ? fmtPct(metrics.severityAgreement.agreementRate)
                   : "—"}
               </span>
             </div>
             <div className="p-3.5 flex items-center justify-between">
-              <span className="text-[10.5px] text-inkdim uppercase">Remediation Score</span>
-              <span className="font-bold text-amber-400">
+              <span className="text-[11px] text-[var(--color-muted)]">Remediation helpfulness</span>
+              <span className="font-bold text-[var(--color-accent-ink)] font-mono">
                 {metrics.remediationScore?.helpfulRate != null
                   ? fmtPct(metrics.remediationScore.helpfulRate)
                   : "—"}
               </span>
             </div>
             <div className="p-3.5 flex items-center justify-between">
-              <span className="text-[10.5px] text-inkdim uppercase">F1-Score</span>
-              <span className="font-bold text-white">
+              <span className="text-[11px] text-[var(--color-muted)]">Harmonic F1-score</span>
+              <span className="font-bold text-[var(--color-ink)] font-mono">
                 {metrics.f1 != null ? fmtPct(metrics.f1) : "—"}
               </span>
             </div>
@@ -388,18 +383,18 @@ export default async function DashboardPage({
       {/* ── EVALUATION TELEMETRY: CALIBRATION & CATEGORIES ── */}
       <section id="metrics" className="mb-14 scroll-mt-24">
         <div className="mb-3">
-          <SectionLabel badge="CALIBRATION FORENSICS">Model Reliability Diagnostics</SectionLabel>
+          <SectionLabel badge="RELIABILITY FORENSICS">Model Reliability Diagnostics</SectionLabel>
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2">
           {/* Outcomes distribution */}
           <div className="surface-card p-5 flex flex-col justify-between">
             <div>
-              <h3 className="font-mono text-[13px] font-bold text-white flex items-center justify-between">
-                <span>Verification Verdicts</span>
-                <span className="text-[10px] text-brand">TP / FP</span>
+              <h3 className="text-[14px] font-bold text-[var(--color-ink)] flex items-center justify-between">
+                <span>Verification verdicts</span>
+                <span className="text-[11px] font-mono text-[var(--color-muted)] font-normal">TP / FP</span>
               </h3>
-              <p className="text-[11.5px] text-inkdim mt-1">
+              <p className="text-[12px] text-[var(--color-muted)] mt-1">
                 Human adjudications across model claims.
               </p>
             </div>
@@ -411,11 +406,11 @@ export default async function DashboardPage({
           {/* Calibration bar chart */}
           <div className="surface-card p-5 flex flex-col justify-between">
             <div>
-              <h3 className="font-mono text-[13px] font-bold text-white flex items-center justify-between">
+              <h3 className="text-[14px] font-bold text-[var(--color-ink)] flex items-center justify-between">
                 <span>Calibration</span>
-                <span className="text-[10px] text-brand">RELIABILITY</span>
+                <span className="text-[11px] font-mono text-[var(--color-muted)] font-normal">RELIABILITY</span>
               </h3>
-              <p className="text-[11.5px] text-inkdim mt-1">
+              <p className="text-[12px] text-[var(--color-muted)] mt-1">
                 Observed confirmation rate vs reported confidence.
               </p>
             </div>
@@ -427,11 +422,11 @@ export default async function DashboardPage({
           {/* Precision per category */}
           <div className="surface-card p-5 flex flex-col justify-between">
             <div>
-              <h3 className="font-mono text-[13px] font-bold text-white flex items-center justify-between">
-                <span>By Category</span>
-                <span className="text-[10px] text-brand">PRECISION</span>
+              <h3 className="text-[14px] font-bold text-[var(--color-ink)] flex items-center justify-between">
+                <span>By category</span>
+                <span className="text-[11px] font-mono text-[var(--color-muted)] font-normal">PRECISION</span>
               </h3>
-              <p className="text-[11.5px] text-inkdim mt-1">
+              <p className="text-[12px] text-[var(--color-muted)] mt-1">
                 Breakdown of TP/FP precision rates across categories.
               </p>
             </div>
@@ -443,11 +438,11 @@ export default async function DashboardPage({
           {/* Severity Drift Matrix */}
           <div className="surface-card p-5 flex flex-col justify-start gap-4">
             <div>
-              <h3 className="font-mono text-[13px] font-bold text-white flex items-center justify-between">
-                <span>Severity Drift</span>
-                <span className="text-[10px] text-brand">ALIGNMENT</span>
+              <h3 className="text-[14px] font-bold text-[var(--color-ink)] flex items-center justify-between">
+                <span>Severity drift</span>
+                <span className="text-[11px] font-mono text-[var(--color-muted)] font-normal">ALIGNMENT</span>
               </h3>
-              <p className="text-[11.5px] text-inkdim mt-1">
+              <p className="text-[12px] text-[var(--color-muted)] mt-1">
                 Model severity vs human-verified ground truth.
               </p>
             </div>
@@ -463,30 +458,30 @@ export default async function DashboardPage({
         <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
           <div>
             <SectionLabel badge="ACTIVE DECK">Inspection Queue</SectionLabel>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-mono mt-1">
-              Artifacts Under Adjudication
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--color-ink)] mt-1">
+              Artifacts under adjudication
             </h2>
           </div>
           <div className="flex flex-wrap items-center gap-2 font-mono text-[11px]">
-            <span className="text-inkdim">{totalCount} AUDITED ARTIFACTS</span>
-            <span className="text-hairline">·</span>
+            <span className="text-[var(--color-muted)]">{totalCount} AUDITED ARTIFACTS</span>
+            <span className="text-[var(--color-rule)]">·</span>
             <a
               href="/api/export?format=csv"
               download
-              className="inline-flex items-center gap-1 rounded border border-hairline bg-surface-1 px-2.5 py-1 text-inktext hover:border-brand/40 hover:text-brand transition shadow-sm"
+              className="inline-flex items-center gap-1 rounded-[4px] border border-[var(--color-rule)] bg-[var(--color-paper-2)] px-2.5 py-1 text-[var(--color-ink)] hover:border-[var(--color-ink)] transition shadow-sm font-sans text-[11.5px]"
               title="Download entire dataset as CSV"
             >
-              <Download size={11} />
-              DATASET CSV
+              <Download size={12} />
+              <span>Dataset CSV</span>
             </a>
             <a
               href="/api/export?format=json"
               download
-              className="inline-flex items-center gap-1 rounded border border-hairline bg-surface-1 px-2.5 py-1 text-inktext hover:border-brand/40 hover:text-brand transition shadow-sm"
+              className="inline-flex items-center gap-1 rounded-[4px] border border-[var(--color-rule)] bg-[var(--color-paper-2)] px-2.5 py-1 text-[var(--color-ink)] hover:border-[var(--color-ink)] transition shadow-sm font-sans text-[11.5px]"
               title="Download entire dataset as JSON"
             >
-              <FileText size={11} />
-              DATASET JSON
+              <FileText size={12} />
+              <span>Dataset JSON</span>
             </a>
           </div>
         </div>
@@ -507,21 +502,21 @@ export default async function DashboardPage({
                   className="surface-card surface-card-hover group flex flex-col justify-between overflow-hidden"
                 >
                   {/* Thumbnail viewport */}
-                  <div className="relative h-44 overflow-hidden border-b border-hairline bg-ink-950">
+                  <div className="relative h-44 overflow-hidden border-b border-[var(--color-rule)] bg-[var(--color-paper-3)]">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={src}
                       alt={audit.title}
-                      className="h-full w-full object-cover object-top opacity-85 transition duration-500 group-hover:scale-105 group-hover:opacity-100"
+                      className="h-full w-full object-cover object-top transition duration-300 group-hover:scale-[1.02]"
                     />
 
                     {/* Top badges overlay */}
                     <div className="absolute left-3 top-3 flex items-center gap-1.5">
-                      <span className="inline-flex items-center gap-1.5 rounded bg-ink-950/90 px-2 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-white ring-1 ring-hairline backdrop-blur">
+                      <span className="inline-flex items-center gap-1.5 rounded-[4px] bg-[var(--color-paper-2)]/90 px-2 py-1 font-sans text-[11px] font-semibold text-[var(--color-ink)] shadow-sm border border-[var(--color-rule)] backdrop-blur">
                         {audit.kind === "poster" ? (
-                          <Presentation size={11} className="text-brand" />
+                          <Presentation size={12} className="text-[var(--color-accent-ink)]" />
                         ) : (
-                          <MonitorSmartphone size={11} className="text-cyan-400" />
+                          <MonitorSmartphone size={12} className="text-[var(--color-water)]" />
                         )}
                         {audit.kind === "poster" ? "Poster" : "UI Screen"}
                       </span>
@@ -530,16 +525,13 @@ export default async function DashboardPage({
                     <div className="absolute right-3 top-3">
                       <AnalyzerChip analyzer={audit.analyzer} />
                     </div>
-
-                    {/* Scanline hover hint */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-transparent opacity-60" />
                   </div>
 
                   {/* Card content */}
                   <div className="p-4 flex flex-col justify-between flex-1">
                     <div>
                       <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-mono text-[13.5px] font-bold text-white group-hover:text-brand-light transition leading-snug">
+                        <h3 className="font-display text-[14.5px] font-bold text-[var(--color-ink)] group-hover:text-[var(--color-accent-ink)] transition leading-snug">
                           {audit.title}
                         </h3>
                         {status === "pending" ? (
@@ -547,41 +539,41 @@ export default async function DashboardPage({
                         ) : status === "done" ? (
                           <StatusBadge status="confirmed" />
                         ) : (
-                          <span className="rounded bg-surface-2 px-2 py-0.5 font-mono text-[10px] text-inkdim">
-                            No Issues
+                          <span className="rounded-[4px] bg-[var(--color-paper-3)] px-2 py-0.5 font-sans text-[11px] text-[var(--color-muted)]">
+                            No issues
                           </span>
                         )}
                       </div>
 
-                      <p className="mt-1 font-mono text-[10.5px] text-inkdim">
+                      <p className="mt-1 font-mono text-[11px] text-[var(--color-muted)]">
                         {fmtDate(audit.createdAt)} · {c.total} claim{c.total === 1 ? "" : "s"}
                         {c.critical > 0 && (
-                          <span className="text-rose-400 font-semibold"> · {c.critical} critical</span>
+                          <span className="text-[var(--color-vermilion)] font-semibold"> · {c.critical} critical</span>
                         )}
                       </p>
                     </div>
 
                     {/* Verification mini-meter */}
-                    <div className="mt-4 flex items-center justify-between border-t border-hairline/60 pt-3">
-                      <div className="flex items-center gap-1.5 font-mono text-[10.5px]">
+                    <div className="mt-4 flex items-center justify-between border-t border-[var(--color-rule)] pt-3">
+                      <div className="flex items-center gap-1.5 font-mono text-[11px]">
                         {c.confirmed > 0 && (
-                          <span className="text-emerald-400 font-semibold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                          <span className="text-[var(--color-green)] font-semibold bg-[var(--color-green-soft)] px-1.5 py-0.5 rounded-[3px] border border-[var(--color-green)]">
                             {c.confirmed} TP
                           </span>
                         )}
                         {c.rejected > 0 && (
-                          <span className="text-rose-400 font-semibold bg-rose-500/10 px-1.5 py-0.5 rounded border border-rose-500/20">
+                          <span className="text-[var(--color-vermilion)] font-semibold bg-[var(--color-vermilion-soft)] px-1.5 py-0.5 rounded-[3px] border border-[var(--color-vermilion)]">
                             {c.rejected} FP
                           </span>
                         )}
                         {c.pending > 0 && (
-                          <span className="text-amber-300 font-semibold bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
+                          <span className="text-[var(--color-accent-ink)] font-semibold bg-[var(--color-accent-soft)] px-1.5 py-0.5 rounded-[3px] border border-[var(--color-accent)]">
                             {c.pending} pending
                           </span>
                         )}
                       </div>
 
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-surface-2 text-inkdim group-hover:bg-brand group-hover:text-ink-950 transition">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-paper-3)] text-[var(--color-muted)] group-hover:bg-[var(--color-accent)] group-hover:text-[var(--color-accent-ink)] transition">
                         <ArrowRight size={13} />
                       </span>
                     </div>
@@ -602,8 +594,8 @@ export default async function DashboardPage({
 
           {/* Right: Upload Dropzone Frame */}
           <div id="upload" className="surface-card p-5 h-fit scroll-mt-24">
-            <SectionLabel badge="NEW INGEST">Ingest New Artifact</SectionLabel>
-            <p className="text-[12px] text-inkdim mt-1 mb-4 leading-relaxed">
+            <SectionLabel badge="NEW INGEST">Ingest new artifact</SectionLabel>
+            <p className="text-[12.5px] text-[var(--color-muted)] mt-1 mb-4 leading-relaxed font-sans">
               Upload campus flyers or UI frames for grounded VLM accessibility decomposition. Analysis executes completely in your local environment.
             </p>
             <UploadZone />
@@ -613,58 +605,58 @@ export default async function DashboardPage({
 
       {/* ── METHODOLOGY & OFFLINE PIPELINE ── */}
       <section id="method" className="scroll-mt-24">
-        <SectionLabel badge="RIGOROUS SPEC">Evaluation Protocol</SectionLabel>
-        <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-mono mt-1 mb-6">
-          How False Positives Stay Under Empirical Control
+        <SectionLabel badge="SPECIFICATION">Evaluation Protocol</SectionLabel>
+        <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--color-ink)] mt-1 mb-6">
+          How false positives stay under empirical control
         </h2>
 
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-3 font-sans">
           <div className="surface-card p-5">
-            <div className="flex items-center gap-2 text-brand font-mono text-[12px] font-bold mb-2">
-              <Cpu size={16} />
-              <span>Two Dual Vision Engines</span>
+            <div className="flex items-center gap-2 text-[var(--color-ink)] text-[13px] font-bold mb-2">
+              <Cpu size={16} className="text-[var(--color-accent)]" />
+              <span>Two dual vision engines</span>
             </div>
-            <p className="text-[12.5px] leading-relaxed text-inktext/80">
-              Qwen2.5-VL provides semantic spatial reasoning (reading orders, hierarchy, complex layouts) while an airgapped deterministic pixel engine computes contrast ratios, colorfulness, and edge density. Even without GPU or network, the auditor maintains full operation.
+            <p className="text-[12.5px] leading-relaxed text-[var(--color-muted)]">
+              Qwen2.5-VL provides semantic spatial reasoning (reading orders, hierarchy, complex layouts) while an airgapped deterministic pixel engine computes contrast ratios, colorfulness, and edge density.
             </p>
           </div>
 
           <div className="surface-card p-5">
-            <div className="flex items-center gap-2 text-emerald-400 font-mono text-[12px] font-bold mb-2">
+            <div className="flex items-center gap-2 text-[var(--color-green)] text-[13px] font-bold mb-2">
               <UserCheck size={16} />
-              <span>Write-Protected Ground Truth</span>
+              <span>Write-protected ground truth</span>
             </div>
-            <p className="text-[12.5px] leading-relaxed text-inktext/80">
-              Reviewers mark claims as True Positive or False Positive, and record model omissions (False Negatives). Verified labels are cryptographically locked: re-analyzing an artifact only updates unverified claims so historic evaluation sets are never contaminated.
+            <p className="text-[12.5px] leading-relaxed text-[var(--color-muted)]">
+              Reviewers mark claims as True Positive or False Positive, and record model omissions (False Negatives). Verified labels are locked so re-analysis never contaminates historic benchmark records.
             </p>
           </div>
 
           <div className="surface-card p-5">
-            <div className="flex items-center gap-2 text-cyan-400 font-mono text-[12px] font-bold mb-2">
+            <div className="flex items-center gap-2 text-[var(--color-water)] text-[13px] font-bold mb-2">
               <Activity size={16} />
-              <span>Calibration That Punishes Guessing</span>
+              <span>Calibration that punishes guessing</span>
             </div>
-            <p className="text-[12.5px] leading-relaxed text-inktext/80">
-              Precision = TP / (TP + FP); Recall = TP / (TP + FN). Confidence calibration plots the model’s claimed probability against the actual human confirmation rate, surfacing overconfident prompt hallucinations before end users are misled.
+            <p className="text-[12.5px] leading-relaxed text-[var(--color-muted)]">
+              Precision = TP / (TP + FP); Recall = TP / (TP + FN). Confidence calibration plots the model’s claimed probability against the actual human confirmation rate to flag overconfidence.
             </p>
           </div>
         </div>
 
         {/* Local Qwen configuration snippet */}
         <div className="surface-card mt-4 p-5 font-mono text-[12px]">
-          <div className="flex items-center justify-between text-inkdim text-[11px] pb-2 border-b border-hairline/60 mb-3">
-            <span className="flex items-center gap-2 text-white">
-              <Terminal size={14} className="text-brand" />
+          <div className="flex items-center justify-between text-[var(--color-muted)] text-[11px] pb-2 border-b border-[var(--color-rule)] mb-3 font-sans">
+            <span className="flex items-center gap-2 text-[var(--color-ink)] font-semibold">
+              <Terminal size={14} className="text-[var(--color-accent)]" />
               <span>Connect Local Vision-Language Model (Ollama / vLLM / LM Studio)</span>
             </span>
-            <span className="text-brand">OPENAI-COMPATIBLE API</span>
+            <span className="text-[var(--color-muted)] font-mono text-[10px]">OPENAI-COMPATIBLE API</span>
           </div>
-          <pre className="text-inktext/90 leading-relaxed overflow-x-auto">
+          <pre className="text-[var(--color-ink)] leading-relaxed overflow-x-auto bg-[var(--color-paper-3)] p-3 rounded-[6px] border border-[var(--color-rule)]">
             <code>
-              <span className="text-inkdim"># Configure local endpoint in your .env:</span>{"\n"}
-              VLM_BASE_URL=<span className="text-brand">http://127.0.0.1:11434/v1</span>{"\n"}
-              VLM_MODEL=<span className="text-brand">qwen2.5vl:3b</span>{"\n\n"}
-              <span className="text-inkdim"># Launch with Ollama:</span>{"\n"}
+              <span className="text-[var(--color-muted)]"># Configure local endpoint in your .env:</span>{"\n"}
+              VLM_BASE_URL=<span className="font-bold text-[var(--color-accent-ink)]">http://127.0.0.1:11434/v1</span>{"\n"}
+              VLM_MODEL=<span className="font-bold text-[var(--color-accent-ink)]">qwen2.5vl:3b</span>{"\n\n"}
+              <span className="text-[var(--color-muted)]"># Launch with Ollama:</span>{"\n"}
               $ ollama pull qwen2.5vl:3b && ollama run qwen2.5vl:3b
             </code>
           </pre>

@@ -45,3 +45,5 @@ mocks/
 
 # External skills
 ui-ux-pro-max-skill/
+.agents/
+skills-lock.json

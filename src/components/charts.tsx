@@ -1,17 +1,17 @@
 import type { Metrics } from "@/lib/metrics";
 
 const STATUS_COLORS: Record<string, string> = {
-  confirmed: "#10b981", // Emerald
-  rejected: "#f43f5e",  // Rose
-  pending: "#f59e0b",   // Amber
-  uncertain: "#64748b", // Slate
+  confirmed: "#2b8a3e", // Grass green
+  rejected: "#c92a2a",  // Vermilion
+  pending: "#d97706",   // Tangerine
+  uncertain: "#6b7280", // Pencil slate
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  confirmed: "True Positives (TP)",
-  rejected: "False Positives (FP)",
-  pending: "Awaiting Review",
-  uncertain: "Uncertain / Flagged",
+  confirmed: "True positives (TP)",
+  rejected: "False positives (FP)",
+  pending: "Awaiting review",
+  uncertain: "Uncertain / flagged",
 };
 
 /** Donut of verification outcomes across all findings. */
@@ -34,7 +34,7 @@ export function OutcomeDonut({
             cy="70"
             r={R}
             fill="none"
-            stroke="rgba(255,255,255,0.05)"
+            stroke="var(--color-rule)"
             strokeWidth="14"
           />
           {total > 0 &&
@@ -55,7 +55,7 @@ export function OutcomeDonut({
                     strokeDasharray={dash}
                     strokeDashoffset={-offset * C}
                     strokeLinecap="butt"
-                    className="transition-all duration-700 ease-out"
+                    className="transition-all duration-500 ease-out"
                   />
                 );
                 offset += frac;
@@ -65,35 +65,35 @@ export function OutcomeDonut({
 
         {/* Center telemetry hub */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <p className="tabular font-mono text-[28px] font-bold leading-none text-white tracking-tight">
+          <p className="tabular font-mono text-[28px] font-bold leading-none text-[var(--color-ink)] tracking-tight">
             {total}
           </p>
-          <p className="mt-1 font-mono text-[9px] font-semibold uppercase tracking-widest text-brand-light">
+          <p className="mt-1 font-mono text-[9.5px] font-medium text-[var(--color-muted)]">
             CLAIMS
           </p>
         </div>
       </div>
 
-      <div className="space-y-2.5 w-full">
+      <div className="space-y-2 w-full">
         {outcomes.map((o) => {
           const pct = total > 0 ? Math.round((o.count / total) * 100) : 0;
           return (
             <div
               key={o.status}
-              className="flex items-center justify-between gap-3 text-[12px] rounded-lg border border-hairline/60 bg-surface-2/40 px-2.5 py-1.5"
+              className="flex items-center justify-between gap-3 text-[12px] rounded-[6px] border border-[var(--color-rule)] bg-[var(--color-paper-3)] px-3 py-1.5"
             >
               <div className="flex items-center gap-2">
                 <span
-                  className="h-2 w-2 rounded-full shadow-sm shrink-0"
+                  className="h-2 w-2 rounded-full shrink-0"
                   style={{ background: STATUS_COLORS[o.status] }}
                 />
-                <span className="text-inktext/90 font-medium text-[11.5px] whitespace-nowrap">
+                <span className="text-[var(--color-ink)] font-medium text-[12px] whitespace-nowrap">
                   {STATUS_LABELS[o.status]}
                 </span>
               </div>
               <div className="flex items-center gap-2 font-mono shrink-0">
-                <span className="text-inkdim text-[10.5px]">{pct}%</span>
-                <span className="tabular font-bold text-white text-[12px]">
+                <span className="text-[var(--color-muted)] text-[11px]">{pct}%</span>
+                <span className="tabular font-bold text-[var(--color-ink)] text-[12px]">
                   {o.count}
                 </span>
               </div>
@@ -114,14 +114,14 @@ export function CalibrationBars({
   return (
     <div className="w-full">
       {/* Target reference line info */}
-      <div className="flex items-center justify-between text-[10px] font-mono text-inkdim mb-2 border-b border-hairline/40 pb-1">
+      <div className="flex items-center justify-between text-[11px] font-mono text-[var(--color-muted)] mb-2 border-b border-[var(--color-rule)] pb-1">
         <span>EMPIRICAL CONFIRM RATE</span>
-        <span className="text-brand-light">IDEAL = MONOTONIC RISING</span>
+        <span className="text-[var(--color-accent-ink)] font-semibold">IDEAL = MONOTONIC RISING</span>
       </div>
 
-      <div className="relative flex h-[130px] items-end gap-3 border-b border-hairline px-2 pb-0 bg-surface-0/50 rounded-t-lg pt-4">
+      <div className="relative flex h-[130px] items-end gap-3 border-b border-[var(--color-ink)] px-2 pb-0 bg-[var(--color-paper-3)] rounded-t-[6px] pt-4">
         {/* Benchmark 50% line */}
-        <div className="absolute inset-x-0 top-1/2 border-b border-dashed border-white/10 pointer-events-none" />
+        <div className="absolute inset-x-0 top-1/2 border-b border-dashed border-[var(--color-rule)] pointer-events-none" />
 
         {calibration.map((b) => {
           const ratePct = Math.round(b.confirmRate * 100);
@@ -130,20 +130,19 @@ export function CalibrationBars({
               key={b.bucket}
               className="group flex flex-1 flex-col items-center gap-1.5 self-stretch justify-end relative"
             >
-              <span className="tabular font-mono text-[10.5px] font-semibold text-white group-hover:text-brand transition">
+              <span className="tabular font-mono text-[10.5px] font-semibold text-[var(--color-ink)]">
                 {b.n > 0 ? `${ratePct}%` : "—"}
               </span>
 
               <div className="relative w-full max-w-[48px] h-full flex items-end justify-center">
                 <div
-                  className="w-full rounded-t-sm transition-all duration-500 ease-out"
+                  className="w-full rounded-t-[2px] transition-all duration-300 ease-out"
                   style={{
                     height: `${Math.max(b.n > 0 ? b.confirmRate * 100 : 0, b.n > 0 ? 6 : 2)}%`,
                     background:
                       b.n > 0
-                        ? "linear-gradient(180deg, #fbbf24 0%, #b45309 100%)"
-                        : "rgba(255,255,255,0.05)",
-                    boxShadow: b.n > 0 ? "0 0 12px -2px rgba(245,158,11,0.4)" : "none",
+                        ? "var(--color-accent)"
+                        : "var(--color-rule)",
                   }}
                 />
               </div>
@@ -155,8 +154,8 @@ export function CalibrationBars({
       <div className="mt-2.5 flex gap-3 px-2">
         {calibration.map((b) => (
           <div key={b.bucket} className="flex-1 text-center font-mono">
-            <p className="text-[10px] font-semibold text-inktext">{b.bucket}</p>
-            <p className="text-[9px] text-inkdim/70">n={b.n}</p>
+            <p className="text-[10.5px] font-semibold text-[var(--color-ink)]">{b.bucket}</p>
+            <p className="text-[9.5px] text-[var(--color-muted)]">n={b.n}</p>
           </div>
         ))}
       </div>
@@ -172,53 +171,53 @@ export function CategoryBars({
 }) {
   if (perCategory.length === 0) {
     return (
-      <div className="py-10 text-center font-mono text-[12px] text-inkdim bg-surface-0/40 rounded-lg border border-hairline/60">
+      <div className="py-10 text-center font-sans text-[12px] text-[var(--color-muted)] bg-[var(--color-paper-3)] rounded-[6px] border border-[var(--color-rule)]">
         No reviewed categories recorded yet.
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       {perCategory.map((c) => {
         const precPct = c.precision != null ? Math.round(c.precision * 100) : null;
         return (
           <div
             key={c.category}
-            className="rounded-lg border border-hairline/60 bg-surface-2/40 p-2.5"
+            className="rounded-[6px] border border-[var(--color-rule)] bg-[var(--color-paper-3)] p-2.5"
           >
-            <div className="mb-2 flex items-center justify-between text-[11.5px]">
-              <span className="font-medium text-white flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-sm bg-brand" />
+            <div className="mb-2 flex items-center justify-between text-[12px]">
+              <span className="font-semibold text-[var(--color-ink)] flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-[2px] bg-[var(--color-accent)]" />
                 {c.label}
               </span>
               <div className="flex items-center gap-2 font-mono text-[11px] shrink-0">
                 <span
-                  className={`font-bold px-1.5 py-0.5 rounded whitespace-nowrap ${
+                  className={`font-semibold px-1.5 py-0.5 rounded-[4px] whitespace-nowrap ${
                     precPct != null && precPct >= 70
-                      ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
+                      ? "bg-[var(--color-green-soft)] text-[var(--color-green)] border border-[var(--color-green)]"
                       : precPct != null
-                      ? "bg-amber-400/15 text-amber-300 border border-amber-400/30"
-                      : "text-inkdim"
+                      ? "bg-[var(--color-accent-soft)] text-[var(--color-accent-ink)] border border-[var(--color-accent)]"
+                      : "text-[var(--color-muted)]"
                   }`}
                 >
-                  {precPct != null ? `${precPct}% PREC` : "UNRATED"}
+                  {precPct != null ? `${precPct}% precision` : "unrated"}
                 </span>
-                <span className="text-inkdim whitespace-nowrap">
+                <span className="text-[var(--color-muted)] whitespace-nowrap">
                   {c.tp} TP · {c.fp} FP
                 </span>
               </div>
             </div>
 
             {/* Split Progress Track */}
-            <div className="flex h-2 overflow-hidden rounded-full bg-surface-0 border border-hairline/50">
+            <div className="flex h-2 overflow-hidden rounded-full bg-[var(--color-paper)] border border-[var(--color-rule)]">
               <div
-                className="h-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.7)] transition-all duration-500"
+                className="h-full bg-[var(--color-green)] transition-all duration-300"
                 style={{ width: `${(c.tp / Math.max(c.total, 1)) * 100}%` }}
                 title={`${c.tp} Confirmed True Positives`}
               />
               <div
-                className="h-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.7)] transition-all duration-500"
+                className="h-full bg-[var(--color-vermilion)] transition-all duration-300"
                 style={{ width: `${(c.fp / Math.max(c.total, 1)) * 100}%` }}
                 title={`${c.fp} Rejected False Positives`}
               />
@@ -227,15 +226,15 @@ export function CategoryBars({
         );
       })}
 
-      <div className="flex items-center justify-between pt-1 text-[10px] font-mono text-inkdim border-t border-hairline/50">
-        <span className="flex items-center gap-1.5 text-emerald-400">
-          <span className="h-2 w-2 rounded-sm bg-emerald-500" /> Confirmed (TP)
+      <div className="flex items-center justify-between pt-1 text-[11px] font-sans text-[var(--color-muted)] border-t border-[var(--color-rule)]">
+        <span className="flex items-center gap-1.5 text-[var(--color-green)] font-medium">
+          <span className="h-2 w-2 rounded-full bg-[var(--color-green)]" /> Confirmed (TP)
         </span>
-        <span className="flex items-center gap-1.5 text-rose-400">
-          <span className="h-2 w-2 rounded-sm bg-rose-500" /> False Alarm (FP)
+        <span className="flex items-center gap-1.5 text-[var(--color-vermilion)] font-medium">
+          <span className="h-2 w-2 rounded-full bg-[var(--color-vermilion)]" /> False alarm (FP)
         </span>
-        <span className="flex items-center gap-1.5 text-inkdim">
-          <span className="h-2 w-2 rounded-sm bg-surface-3" /> In Review
+        <span className="flex items-center gap-1.5 text-[var(--color-muted)] font-medium">
+          <span className="h-2 w-2 rounded-full bg-[var(--color-rule)]" /> In review
         </span>
       </div>
     </div>
@@ -260,9 +259,9 @@ export function SeverityDriftMatrix({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between text-[11px] font-mono">
-        <span className="text-inkdim uppercase">Model vs Reviewer Adjudication</span>
-        <span className="font-bold text-amber-400 bg-amber-950/20 px-2 py-0.5 rounded border border-amber-900/40">
+      <div className="flex items-center justify-between text-[11.5px] font-sans">
+        <span className="text-[var(--color-muted)] font-medium">Model vs reviewer adjudication</span>
+        <span className="font-semibold text-[var(--color-accent-ink)] bg-[var(--color-accent-soft)] px-2 py-0.5 rounded-[4px] border border-[var(--color-accent)] font-mono text-[11px]">
           {ratePct != null ? `${ratePct}% SEVERITY AGREEMENT` : "INSUFFICIENT DATA"}
         </span>
       </div>
@@ -270,12 +269,12 @@ export function SeverityDriftMatrix({
       <div className="overflow-x-auto">
         <table className="w-full text-center font-mono text-[11px] border-collapse">
           <thead>
-            <tr>
-              <th className="p-2 text-left font-normal text-inkdim text-[10px]">
+            <tr className="border-b border-[var(--color-ink)]">
+              <th className="p-2 text-left font-medium text-[var(--color-muted)] text-[10.5px]">
                 MODEL \ HUMAN
               </th>
               {sevs.map((s) => (
-                <th key={s} className="p-2 font-bold text-inktext uppercase text-[10px]">
+                <th key={s} className="p-2 font-bold text-[var(--color-ink)] uppercase text-[10.5px]">
                   {labels[s]}
                 </th>
               ))}
@@ -283,8 +282,8 @@ export function SeverityDriftMatrix({
           </thead>
           <tbody>
             {sevs.map((mSev) => (
-              <tr key={mSev} className="border-t border-hairline/40">
-                <td className="p-2 text-left font-bold text-inktext uppercase text-[10px]">
+              <tr key={mSev} className="border-b border-[var(--color-rule)]">
+                <td className="p-2 text-left font-semibold text-[var(--color-ink)] uppercase text-[10.5px]">
                   {labels[mSev]}
                 </td>
                 {sevs.map((hSev) => {
@@ -292,14 +291,14 @@ export function SeverityDriftMatrix({
                   const isDiag = mSev === hSev;
                   const cellBg =
                     count === 0
-                      ? "bg-surface-1/30 text-inkdim/50"
+                      ? "bg-[var(--color-paper-3)] text-[var(--color-muted)]"
                       : isDiag
-                      ? "bg-emerald-500/15 text-emerald-300 font-bold border border-emerald-500/30"
-                      : "bg-amber-500/15 text-amber-300 border border-amber-500/30";
+                      ? "bg-[var(--color-green-soft)] text-[var(--color-green)] font-bold border border-[var(--color-green)]"
+                      : "bg-[var(--color-accent-soft)] text-[var(--color-accent-ink)] border border-[var(--color-accent)] font-semibold";
 
                   return (
                     <td key={hSev} className="p-1.5">
-                      <div className={`py-2.5 rounded-md text-[12px] ${cellBg}`}>{count}</div>
+                      <div className={`py-2 rounded-[4px] text-[12px] ${cellBg}`}>{count}</div>
                     </td>
                   );
                 })}
@@ -309,12 +308,12 @@ export function SeverityDriftMatrix({
         </table>
       </div>
 
-      <div className="flex items-center justify-between text-[9.5px] font-mono text-inkdim pt-1 border-t border-hairline/40">
-        <span className="flex items-center gap-1 text-emerald-400">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Exact Match (Diagonal)
+      <div className="flex items-center justify-between text-[10.5px] font-sans text-[var(--color-muted)] pt-1 border-t border-[var(--color-rule)]">
+        <span className="flex items-center gap-1.5 text-[var(--color-green)] font-medium">
+          <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-green)]" /> Exact match (diagonal)
         </span>
-        <span className="flex items-center gap-1 text-amber-400">
-          <span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> Severity Drift (Off-Diagonal)
+        <span className="flex items-center gap-1.5 text-[var(--color-accent-ink)] font-medium">
+          <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-accent)]" /> Severity drift (off-diagonal)
         </span>
       </div>
     </div>

@@ -1,89 +1,114 @@
 /* Hallmark Theme: Vantage (Reality Capture & Spatial Survey) */
-@import url('https://fonts.googleapis.com/css2?family=Geologica:wght,SHRP@200..500,0..100&display=swap');
 @import "tailwindcss";
 
-@theme {
-  --font-sans: "Geologica", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-display: "Geologica", ui-sans-serif, system-ui, sans-serif;
-  --font-body: "Geologica", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+:root {
+  /* Core Vantage Palette with Rock-Solid Hex Fallbacks */
+  --color-paper: #04090c;
+  --color-paper-2: #091015;
+  --color-paper-3: #111a1f;
+  --color-sheet: #0d151a;
 
-  /* Vantage Material Tokens */
-  --color-paper: oklch(13.5% 0.012 235);
-  --color-paper-2: oklch(17% 0.014 235);
-  --color-paper-3: oklch(21% 0.016 235);
-  --color-sheet: oklch(19% 0.015 235);
-
-  --color-ink: oklch(95% 0.006 230);
-  --color-ink-2: oklch(82% 0.012 230);
-  --color-muted: oklch(66% 0.016 230);
-  --color-rule: oklch(27% 0.014 235);
-  --color-rule-2: oklch(34% 0.016 235);
+  /* Ink Spectrum: Crisp Pale Steel White -> Readable Steel -> Slate Muted */
+  --color-ink: #f1f5f9;
+  --color-ink-2: #cbd5e1;
+  --color-muted: #94a3b8;
+  --color-rule: #20282c;
+  --color-rule-2: #30393f;
 
   /* Chromatic Lime Signal (Found / Measured / Live) */
-  --color-accent: oklch(89% 0.19 126);
-  --color-accent-hi: oklch(93% 0.17 126);
-  --color-accent-ink: oklch(19% 0.04 126);
-  --color-focus: oklch(89% 0.19 126);
+  --color-accent: #bbf451;
+  --color-accent-hi: #cdfa6e;
+  --color-accent-ink: #122402;
+  --color-focus: #bbf451;
 
   /* Point Cloud Depth Ramp */
-  --point-lo: oklch(42% 0.04 245);
-  --point-mid: oklch(70% 0.04 232);
-  --point-hi: oklch(96% 0.02 215);
+  --point-lo: #3f556b;
+  --point-mid: #7093a8;
+  --point-hi: #e2edf5;
+  --color-slot: #111a1f;
 
-  /* Semantic Severity */
-  --color-vermilion: oklch(55% 0.22 25);
-  --color-sienna: oklch(62% 0.14 40);
-  --color-grass: var(--color-accent);
+  /* Semantic Severity Signals */
+  --color-vermilion: #ff5252;
+  --color-sienna: #f59e0b;
+  --color-grass: #bbf451;
 
-  /* Semantic mappings for Tailwind utility compatibility */
-  --color-surface-0: var(--color-paper);
-  --color-surface-1: var(--color-paper-2);
-  --color-surface-2: var(--color-paper-3);
-  --color-surface-3: var(--color-sheet);
-  --color-surface-highlight: var(--color-paper-3);
-
-  --color-brand: var(--color-accent);
-  --color-brand-light: var(--color-accent-hi);
-  --color-brand-bright: var(--color-accent);
-  --color-brand-dark: oklch(75% 0.15 126);
-
-  --color-pass: var(--color-accent);
-  --color-fail: var(--color-vermilion);
-  --color-warn: var(--color-sienna);
-  --color-info: var(--point-mid);
-  --color-radar: var(--color-accent);
-
-  --color-inktext: var(--color-ink);
-  --color-inkmuted: var(--color-muted);
-  --color-inkdim: var(--color-muted);
-
-  --color-hairline: var(--color-rule);
-  --color-hairline-light: var(--color-rule-2);
-  --color-hairline-amber: var(--color-accent);
+  /* Typography & Layout Metrics */
+  --font-display: "Geologica", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: "Geologica", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   --radius-card: 4px;
   --radius-entry: 6px;
   --radius-pill: 999px;
   --rule-hair: 1px;
   --tick: 10px;
-}
 
-:root {
-  color-scheme: dark;
+  --shadow-card: none;
   --tracking-display: -0.035em;
   --display-weight: 300;
-  --shadow-card: none;
+  color-scheme: dark;
+}
+
+/* OKLCH progressive enhancement when supported */
+@supports (color: oklch(10% 0 0)) {
+  :root {
+    --color-paper: oklch(13.5% 0.012 235);
+    --color-paper-2: oklch(17% 0.014 235);
+    --color-paper-3: oklch(21% 0.016 235);
+    --color-sheet: oklch(19% 0.015 235);
+    --color-ink: oklch(95% 0.006 230);
+    --color-ink-2: oklch(82% 0.012 230);
+    --color-muted: oklch(66% 0.016 230);
+    --color-rule: oklch(27% 0.014 235);
+    --color-rule-2: oklch(34% 0.016 235);
+    --color-accent: oklch(89% 0.19 126);
+    --color-accent-hi: oklch(93% 0.17 126);
+    --color-accent-ink: oklch(19% 0.04 126);
+    --color-focus: oklch(89% 0.19 126);
+    --color-vermilion: oklch(65% 0.22 25);
+    --color-sienna: oklch(75% 0.16 65);
+  }
+}
+
+@theme {
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+
+  --color-paper: var(--color-paper);
+  --color-paper-2: var(--color-paper-2);
+  --color-paper-3: var(--color-paper-3);
+  --color-sheet: var(--color-sheet);
+
+  --color-ink: var(--color-ink);
+  --color-ink-2: var(--color-ink-2);
+  --color-muted: var(--color-muted);
+  --color-rule: var(--color-rule);
+  --color-rule-2: var(--color-rule-2);
+
+  --color-accent: var(--color-accent);
+  --color-accent-hi: var(--color-accent-hi);
+  --color-accent-ink: var(--color-accent-ink);
+  --color-focus: var(--color-focus);
+
+  --color-vermilion: var(--color-vermilion);
+  --color-sienna: var(--color-sienna);
+  --color-grass: var(--color-grass);
 }
 
 html {
   color-scheme: dark;
   scroll-behavior: smooth;
   overflow-x: clip;
+  background-color: #04090c;
+  background-color: var(--color-paper);
 }
 
 body {
+  background-color: #04090c;
   background-color: var(--color-paper);
+  color: #cbd5e1;
   color: var(--color-ink-2);
   font-family: var(--font-body);
   font-weight: 300;
@@ -163,166 +188,130 @@ h1, h2, h3, h4, h5, h6 {
   border-top: var(--rule-hair) solid var(--color-rule);
 }
 
-.ruled > * {
-  border-bottom: var(--rule-hair) solid var(--color-rule);
-}
-
-/* ── Vantage Pills & Buttons ── */
+/* Vantage Controls */
 .btn {
-  min-height: 48px;
-  padding: 0 1.5rem;
-  border: 0;
-  border-radius: var(--radius-pill);
-  background: var(--color-accent);
-  color: var(--color-accent-ink);
-  font-family: var(--font-body);
-  font-weight: 400;
-  font-size: 13.5px;
-  line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  min-height: 44px;
+  padding: 0 1.25rem;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 13.5px;
+  line-height: 1;
   cursor: pointer;
-  user-select: none;
-  transition: background 150ms ease-out, transform 100ms ease-out;
-}
-
-.btn:hover {
-  background: var(--color-accent-hi);
-}
-
-.btn:active {
-  transform: scale(0.98);
+  transition: all 0.15s ease-out;
+  text-decoration: none;
+  border: 0;
 }
 
 .btn--primary {
   background: var(--color-accent);
   color: var(--color-accent-ink);
+  font-weight: 500;
 }
 
 .btn--primary:hover {
   background: var(--color-accent-hi);
+  transform: translateY(-1px);
 }
 
 .btn--line {
   background: transparent;
   color: var(--color-ink);
-  box-shadow: inset 0 0 0 var(--rule-hair) var(--color-rule-2);
-  border: 0;
+  border: 1px solid var(--color-rule-2);
 }
 
 .btn--line:hover {
-  box-shadow: inset 0 0 0 var(--rule-hair) var(--color-ink);
-  background: var(--color-paper-3);
+  border-color: var(--color-ink);
+  background: var(--color-paper-2);
 }
 
 .btn--sm {
-  min-height: 36px;
-  padding: 0 1rem;
+  min-height: 34px;
+  padding: 0 0.85rem;
   font-size: 12px;
 }
 
-/* ── Defect Reticle Window ── */
+/* Surveyor Bounding Box Window */
 .bbox-window {
   position: absolute;
-  border-radius: 2px;
-  cursor: pointer;
   pointer-events: auto;
-  transition: border-color 0.12s ease-out;
+  transition: all 0.12s ease-out;
+  cursor: pointer;
 }
 
-.bbox-window-critical {
-  border: 1px solid var(--color-vermilion);
-  background-color: oklch(55% 0.22 25 / 0.08);
+.bbox-reticle {
+  position: absolute;
+  inset: 0;
+  border: 1px solid currentColor;
 }
 
-.bbox-window-major {
-  border: 1px solid var(--color-sienna);
-  background-color: oklch(62% 0.14 40 / 0.08);
+.bbox-reticle::before,
+.bbox-reticle::after {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-color: inherit;
+  border-style: solid;
 }
 
-.bbox-window-minor {
-  border: 1px solid var(--point-mid);
-  background-color: oklch(70% 0.04 232 / 0.08);
+.bbox-reticle::before {
+  top: -1px;
+  left: -1px;
+  border-width: 2px 0 0 2px;
 }
 
-.bbox-window-human {
-  border: 1px dashed var(--color-accent);
-  background-color: oklch(89% 0.19 126 / 0.06);
+.bbox-reticle::after {
+  bottom: -1px;
+  right: -1px;
+  border-width: 0 2px 2px 0;
 }
 
-.bbox-window-active {
-  outline: 1px solid var(--color-accent);
-  outline-offset: 1px;
-  z-index: 40 !important;
-}
-
-.bbox-window:hover {
-  filter: brightness(1.15);
-  z-index: 35;
-}
-
-/* Telemetry chip */
-.evidence-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  border-radius: var(--radius-pill);
-  padding: 0.2rem 0.6rem;
-  font-size: 11px;
-  font-weight: 400;
-  border: var(--rule-hair) solid var(--color-rule);
-  background-color: var(--color-paper-2);
-  color: var(--color-ink-2);
-}
-
-/* ─────────────────────────────────────────────────
-   PRINT / PDF EXPORT OVERRIDES (Vantage Clean Docket)
-───────────────────────────────────────────────── */
-@media print {
-  *,
-  *::before,
-  *::after {
-    color-scheme: light !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+/* Laser sweep animation */
+@keyframes vantage-sweep {
+  0% {
+    top: 0%;
+    opacity: 0;
   }
+  15% {
+    opacity: 0.8;
+  }
+  85% {
+    opacity: 0.8;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
 
-  html,
+.animate-vantage-sweep {
+  animation: vantage-sweep 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-vantage-sweep {
+    animation: none;
+    top: 35%;
+    opacity: 0.4;
+  }
+}
+
+/* Print Overrides */
+@media print {
   body {
     background: #ffffff !important;
-    color: #111111 !important;
-    font-family: var(--font-sans) !important;
-    font-size: 11pt !important;
+    color: #06080c !important;
   }
-
   .surface-card {
+    border-color: #cbd5e1 !important;
     background: #ffffff !important;
-    box-shadow: none !important;
-    border: 1px solid #d1d5db !important;
   }
-
-  .print\:hidden,
-  header,
-  .sticky { display: none !important; }
-
-  main {
-    padding: 0 !important;
-    max-width: 100% !important;
-  }
-
-  .print-image-block { display: block !important; }
-  .print-image-hide  { display: none  !important; }
-
-  .print\:break-inside-avoid,
-  .break-inside-avoid {
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
-  }
-
-  @page {
-    margin: 15mm 12mm;
-    size: A4 portrait;
+  h1, h2, h3, h4, h5, h6 {
+    color: #06080c !important;
   }
 }

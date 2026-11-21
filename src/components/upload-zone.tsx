@@ -4,14 +4,12 @@ import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   CloudUpload,
-  FileImage,
   Loader2,
   MonitorSmartphone,
   Presentation,
   TriangleAlert,
   ShieldCheck,
   Cpu,
-  Sparkles,
 } from "lucide-react";
 
 type Kind = "poster" | "ui_screenshot";
@@ -71,7 +69,7 @@ export function UploadZone() {
   return (
     <div className="space-y-4 font-sans">
       {/* Segmented selector tabs */}
-      <div className="grid grid-cols-2 gap-1 rounded-[6px] border border-[var(--color-rule)] bg-[var(--color-paper-3)] p-1 text-[12px] font-medium">
+      <div className="grid grid-cols-2 gap-1 rounded-full border border-[var(--color-rule)] bg-[var(--color-paper-2)] p-1 text-[12px]">
         {(
           [
             ["poster", "Campus Poster", Presentation],
@@ -83,9 +81,9 @@ export function UploadZone() {
             type="button"
             disabled={busy}
             onClick={() => setKind(k)}
-            className={`flex items-center justify-center gap-1.5 rounded-[4px] py-1.5 transition ${
+            className={`flex items-center justify-center gap-1.5 rounded-full py-1.5 transition ${
               kind === k
-                ? "bg-[var(--color-accent)] text-[var(--color-accent-ink)] font-semibold shadow-sm"
+                ? "bg-[var(--color-accent)] text-[var(--color-accent-ink)] font-medium"
                 : "text-[var(--color-muted)] hover:text-[var(--color-ink)]"
             }`}
           >
@@ -112,10 +110,10 @@ export function UploadZone() {
           const f = e.dataTransfer.files?.[0];
           if (f && !busy) void submit(f);
         }}
-        className={`group relative grid min-h-[190px] cursor-pointer place-items-center overflow-hidden rounded-[8px] border border-dashed p-6 text-center transition ${
+        className={`group relative grid min-h-[190px] cursor-pointer place-items-center overflow-hidden rounded-[var(--radius-card)] border border-dashed p-6 text-center transition ${
           drag
-            ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)]"
-            : "border-[var(--color-rule)] bg-[var(--color-paper-2)] hover:border-[var(--color-ink)]"
+            ? "border-[var(--color-accent)] bg-[var(--color-paper-3)]"
+            : "border-[var(--color-rule-2)] bg-[var(--color-paper-2)] hover:border-[var(--color-accent)]"
         }`}
       >
         <input
@@ -132,16 +130,16 @@ export function UploadZone() {
 
         {busy ? (
           <div className="flex flex-col items-center gap-3">
-            <Loader2 size={28} className="animate-spin text-[var(--color-accent-ink)]" />
+            <Loader2 size={24} className="animate-spin text-[var(--color-accent)]" />
             <div className="space-y-1">
-              <p className="font-sans text-[13px] font-bold text-[var(--color-ink)]">
+              <p className="text-[13px] text-[var(--color-ink)]">
                 {phase === "uploading" ? "Buffering payload..." : "Executing vision audit..."}
               </p>
               <p className="max-w-[260px] truncate font-mono text-[11px] text-[var(--color-muted)]">
                 {message}
               </p>
             </div>
-            <span className="rounded-[4px] bg-[var(--color-paper-3)] border border-[var(--color-rule)] px-2 py-0.5 font-mono text-[10px] text-[var(--color-muted)]">
+            <span className="rounded-full bg-[var(--color-paper-3)] border border-[var(--color-rule)] px-2.5 py-0.5 text-[10px] text-[var(--color-muted)]">
               Local VLM + Deterministic Pixel Engine
             </span>
           </div>
@@ -150,14 +148,14 @@ export function UploadZone() {
             className="flex flex-col items-center gap-3 p-2 text-center"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="grid h-10 w-10 place-items-center rounded-[6px] bg-[var(--color-accent-soft)] border border-[var(--color-accent)] text-[var(--color-accent-ink)]">
-              <Cpu size={20} />
+            <div className="grid h-10 w-10 place-items-center rounded-full bg-[var(--color-paper-3)] border border-[var(--color-sienna)] text-[var(--color-sienna)]">
+              <Cpu size={18} />
             </div>
             <div className="space-y-1">
-              <p className="font-sans text-[13px] font-bold text-[var(--color-ink)]">
+              <p className="text-[13px] text-[var(--color-ink)]">
                 Qwen-VL Vision Model Unavailable
               </p>
-              <p className="font-sans text-[12px] text-[var(--color-muted)] max-w-sm leading-relaxed">
+              <p className="text-[12px] text-[var(--color-muted)] max-w-sm leading-relaxed">
                 {message}
               </p>
               <p className="text-[11.5px] text-[var(--color-muted)] pt-0.5">
@@ -168,21 +166,21 @@ export function UploadZone() {
               <button
                 type="button"
                 onClick={() => pendingFileRef.current && void submit(pendingFileRef.current, true)}
-                className="btn btn--primary text-[12px] h-8 px-3"
+                className="btn btn--primary btn--sm"
               >
                 Proceed with Pixel Engine →
               </button>
               <button
                 type="button"
                 onClick={() => pendingFileRef.current && void submit(pendingFileRef.current, false)}
-                className="btn text-[12px] h-8 px-3"
+                className="btn btn--line btn--sm"
               >
                 Retry Qwen-VL
               </button>
               <button
                 type="button"
                 onClick={() => setPhase("idle")}
-                className="text-[11.5px] text-[var(--color-muted)] hover:underline px-2"
+                className="text-[11.5px] text-[var(--color-muted)] hover:text-[var(--color-ink)] px-2"
               >
                 Cancel
               </button>
@@ -190,29 +188,29 @@ export function UploadZone() {
           </div>
         ) : phase === "error" ? (
           <div className="flex flex-col items-center gap-2.5">
-            <div className="grid h-10 w-10 place-items-center rounded-full bg-[var(--color-vermilion-soft)] border border-[var(--color-vermilion)] text-[var(--color-vermilion)]">
-              <TriangleAlert size={20} />
+            <div className="grid h-10 w-10 place-items-center rounded-full bg-[var(--color-paper-3)] border border-[var(--color-vermilion)] text-[var(--color-vermilion)]">
+              <TriangleAlert size={18} />
             </div>
-            <p className="font-sans text-[12.5px] font-semibold text-[var(--color-vermilion)]">{message}</p>
-            <p className="text-[11.5px] text-[var(--color-muted)] underline underline-offset-4">Click to select another image</p>
+            <p className="text-[12.5px] text-[var(--color-vermilion)]">{message}</p>
+            <p className="text-[11.5px] text-[var(--color-muted)]">Click to select another image</p>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2.5">
-            <div className="grid h-11 w-11 place-items-center rounded-[6px] bg-[var(--color-paper-3)] text-[var(--color-ink)] border border-[var(--color-rule)]">
+            <div className="grid h-11 w-11 place-items-center rounded-full bg-[var(--color-paper-3)] text-[var(--color-accent)] border border-[var(--color-rule)]">
               <CloudUpload size={20} />
             </div>
             <div>
-              <p className="font-sans text-[13.5px] font-semibold text-[var(--color-ink)]">
+              <p className="text-[13.5px] text-[var(--color-ink)]">
                 Drop {kind === "poster" ? "campus poster" : "UI screenshot"} here
               </p>
               <p className="mt-0.5 text-[12px] text-[var(--color-muted)]">
-                or <span className="font-medium text-[var(--color-ink)] underline underline-offset-4">browse filesystem</span>
+                or <span className="text-[var(--color-ink)] underline underline-offset-4">browse filesystem</span>
               </p>
             </div>
-            <div className="flex flex-wrap items-center justify-center gap-1.5 pt-1 font-mono text-[10.5px] text-[var(--color-muted)]">
-              <span className="rounded bg-[var(--color-paper-3)] px-1.5 py-0.2 border border-[var(--color-rule)]">PNG</span>
-              <span className="rounded bg-[var(--color-paper-3)] px-1.5 py-0.2 border border-[var(--color-rule)]">JPG</span>
-              <span className="rounded bg-[var(--color-paper-3)] px-1.5 py-0.2 border border-[var(--color-rule)]">WEBP</span>
+            <div className="flex flex-wrap items-center justify-center gap-1.5 pt-1 text-[10.5px] text-[var(--color-muted)] font-mono">
+              <span className="rounded bg-[var(--color-paper-3)] px-1.5 py-0.5 border border-[var(--color-rule)]">PNG</span>
+              <span className="rounded bg-[var(--color-paper-3)] px-1.5 py-0.5 border border-[var(--color-rule)]">JPG</span>
+              <span className="rounded bg-[var(--color-paper-3)] px-1.5 py-0.5 border border-[var(--color-rule)]">WEBP</span>
               <span>· Max 12MB</span>
             </div>
           </div>
@@ -220,8 +218,8 @@ export function UploadZone() {
       </div>
 
       {/* Security guarantee pill */}
-      <div className="flex items-center justify-between rounded-[6px] border border-[var(--color-rule)] bg-[var(--color-paper-2)] px-3 py-2 font-mono text-[11px] text-[var(--color-muted)] shadow-sm">
-        <span className="flex items-center gap-1.5 text-[var(--color-green)] font-semibold">
+      <div className="flex items-center justify-between rounded-full border border-[var(--color-rule)] bg-[var(--color-paper-2)] px-4 py-2 text-[11px] text-[var(--color-muted)]">
+        <span className="flex items-center gap-1.5 text-[var(--color-accent)]">
           <ShieldCheck size={13} />
           <span>Local processing only</span>
         </span>

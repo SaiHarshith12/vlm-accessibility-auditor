@@ -196,11 +196,11 @@ export default async function DashboardPage({
 
           {/* Headline in sentence case, Geologica 300 with SHRP */}
           <div className="space-y-3">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-[var(--color-ink)] leading-[1.05]">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-[var(--color-ink)] leading-[1.05] font-display">
               Accessibility audits grounded in empirical vision evidence.
             </h1>
             <p className="text-[15px] sm:text-[16px] leading-relaxed text-[var(--color-muted)] max-w-xl font-sans">
-              Eliminate AI hallucination from accessibility compliance. AURA runs a local vision-language model to ground every defect in exact bounding boxes, calculates contrast and edge metrics, and feeds a human verification loop so precision and recall are <strong className="text-[var(--color-ink)] font-normal">measured, never assumed</strong>.
+              Eliminate AI hallucination from accessibility compliance. AURA runs a local vision-language model to ground every defect in exact bounding boxes, calculates contrast and edge metrics, and feeds a human verification loop so precision and recall are <span className="text-[var(--color-accent)] font-medium">measured, never assumed.</span>
             </p>
           </div>
 
@@ -224,11 +224,14 @@ export default async function DashboardPage({
           </div>
 
           {/* Pipeline stages micro-strip */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-4 border-t border-[var(--color-rule)]">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-4 border-t border-[var(--color-rule)]">
             {PIPELINE_STEPS.map((p) => (
-              <div key={p.step} className="surface-card p-2.5">
-                <span className="font-mono text-[10px] text-[var(--color-accent)] bg-[var(--color-paper-3)] px-1.5 py-0.5 rounded-[2px]">{p.step}</span>
-                <p className="font-sans text-[12px] text-[var(--color-ink)] mt-1.5">{p.name}</p>
+              <div key={p.step} className="surface-card p-3 ticks flex flex-col justify-between">
+                <div>
+                  <span className="font-mono text-[10px] text-[var(--color-accent)] bg-[var(--color-paper-3)] border border-[var(--color-rule)] px-1.5 py-0.5 rounded-[2px]">{p.step}</span>
+                  <p className="font-sans text-[12px] text-[var(--color-ink)] font-normal mt-2 leading-tight">{p.name}</p>
+                </div>
+                <p className="font-sans text-[10.5px] text-[var(--color-muted)] mt-1.5 line-clamp-2 leading-snug">{p.desc}</p>
               </div>
             ))}
           </div>
@@ -494,7 +497,7 @@ export default async function DashboardPage({
                 <Link
                   key={audit.id}
                   href={`/audits/${audit.id}`}
-                  className="surface-card surface-card-hover group flex flex-col justify-between overflow-hidden"
+                  className="surface-card surface-card-hover group flex flex-col justify-between overflow-hidden ticks"
                 >
                   {/* Thumbnail viewport */}
                   <div className="relative h-44 overflow-hidden border-b border-[var(--color-rule)] bg-[var(--color-paper)]">
@@ -606,8 +609,8 @@ export default async function DashboardPage({
         </h2>
 
         <div className="grid gap-4 sm:grid-cols-3 font-sans">
-          <div className="surface-card p-5">
-            <div className="flex items-center gap-2 text-[var(--color-ink)] text-[13px] mb-2">
+          <div className="surface-card p-5 ticks">
+            <div className="flex items-center gap-2 text-[var(--color-ink)] text-[13px] mb-2 font-normal">
               <Cpu size={16} className="text-[var(--color-accent)]" />
               <span>Two dual vision engines</span>
             </div>
@@ -616,8 +619,8 @@ export default async function DashboardPage({
             </p>
           </div>
 
-          <div className="surface-card p-5">
-            <div className="flex items-center gap-2 text-[var(--color-accent)] text-[13px] mb-2">
+          <div className="surface-card p-5 ticks">
+            <div className="flex items-center gap-2 text-[var(--color-accent)] text-[13px] mb-2 font-normal">
               <UserCheck size={16} />
               <span>Write-protected ground truth</span>
             </div>
@@ -626,8 +629,8 @@ export default async function DashboardPage({
             </p>
           </div>
 
-          <div className="surface-card p-5">
-            <div className="flex items-center gap-2 text-[var(--point-mid)] text-[13px] mb-2">
+          <div className="surface-card p-5 ticks">
+            <div className="flex items-center gap-2 text-[var(--point-mid)] text-[13px] mb-2 font-normal">
               <Activity size={16} />
               <span>Calibration that punishes guessing</span>
             </div>
@@ -638,7 +641,7 @@ export default async function DashboardPage({
         </div>
 
         {/* Local Qwen configuration snippet */}
-        <div className="surface-card mt-4 p-5 font-mono text-[12px]">
+        <div className="surface-card mt-4 p-5 font-mono text-[12px] ticks">
           <div className="flex items-center justify-between text-[var(--color-muted)] text-[11px] pb-2 border-b border-[var(--color-rule)] mb-3 font-sans">
             <span className="flex items-center gap-2 text-[var(--color-ink)]">
               <Terminal size={14} className="text-[var(--color-accent)]" />

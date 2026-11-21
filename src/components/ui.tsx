@@ -181,15 +181,15 @@ export function ActiveModelBanner({
           <span
             className={`relative inline-flex rounded-full h-2 w-2 ${
               isVlm ? "bg-[var(--color-accent)]" : "bg-[var(--point-mid)]"
-            }`}
+            } ${online ? "animate-pulse" : ""}`}
           />
         </span>
-        <span className="text-[var(--color-muted)]">Active model:</span>
-        <span className="text-[var(--color-ink)]">
-          {isVlm ? "Qwen2.5-VL-3B (Local VLM)" : "Deterministic Pixel Engine"}
+        <span className="text-[var(--color-muted)] text-[11px] font-mono">Active model:</span>
+        <span className="text-[var(--color-ink)] font-medium">
+          {isVlm ? "Qwen2.5-VL-3B" : "Deterministic Pixel Engine"}
         </span>
         <span className="text-[var(--color-rule)]">/</span>
-        <span className="text-[11px] text-[var(--color-accent)]">
+        <span className="text-[11px] text-[var(--color-accent)] font-mono">
           {online ? "Online · local GPU" : "Offline fallback"}
         </span>
       </div>

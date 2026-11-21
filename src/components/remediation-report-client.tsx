@@ -69,9 +69,9 @@ export function RemediationReportClient({ audit, findings }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-paper)] text-[var(--color-ink)] selection:bg-[var(--color-accent)]/20">
+    <div className="min-h-screen bg-[var(--color-paper)] text-[var(--color-ink)] selection:bg-[var(--color-accent)] selection:text-[var(--color-accent-ink)]">
       {/* Top action bar - Hidden during print */}
-      <header className="sticky top-0 z-40 border-b border-[var(--color-paper-rule)] bg-[var(--color-paper-warm)]/90 backdrop-blur-md px-6 py-3 print:hidden">
+      <header className="sticky top-0 z-40 border-b border-[var(--color-rule)] bg-[var(--color-paper)]/95 backdrop-blur-md px-6 py-3 print:hidden">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Link
@@ -81,8 +81,8 @@ export function RemediationReportClient({ audit, findings }: Props) {
               <ArrowLeft className="h-3.5 w-3.5" />
               Workspace
             </Link>
-            <div className="h-4 w-px bg-[var(--color-paper-rule)]" />
-            <span className="text-xs text-[var(--color-pencil)]">
+            <div className="h-4 w-px bg-[var(--color-rule)]" />
+            <span className="text-xs text-[var(--color-muted)] font-mono">
               Executive remediation report
             </span>
           </div>
@@ -100,26 +100,26 @@ export function RemediationReportClient({ audit, findings }: Props) {
             <a
               href={`/api/export?auditId=${audit.id}&format=csv`}
               download
-              className="btn btn--sm inline-flex items-center gap-1.5"
+              className="btn btn--sm inline-flex items-center gap-1.5 text-[var(--color-muted)] hover:text-[var(--color-ink)]"
             >
-              <Download className="h-3.5 w-3.5 text-[var(--color-pencil)]" />
+              <Download className="h-3.5 w-3.5" />
               CSV
             </a>
             <a
               href={`/api/export?auditId=${audit.id}&format=json`}
               download
-              className="btn btn--sm inline-flex items-center gap-1.5"
+              className="btn btn--sm inline-flex items-center gap-1.5 text-[var(--color-muted)] hover:text-[var(--color-ink)]"
             >
-              <FileText className="h-3.5 w-3.5 text-[var(--color-pencil)]" />
+              <FileText className="h-3.5 w-3.5" />
               JSON
             </a>
             <a
               href={`/api/report/${audit.id}/image?download=1`}
               target="_blank"
               rel="noreferrer"
-              className="btn btn--sm inline-flex items-center gap-1.5"
+              className="btn btn--sm inline-flex items-center gap-1.5 text-[var(--color-muted)] hover:text-[var(--color-ink)]"
             >
-              <ImageIcon className="h-3.5 w-3.5 text-[var(--color-pencil)]" />
+              <ImageIcon className="h-3.5 w-3.5" />
               PNG
             </a>
           </div>
@@ -129,19 +129,19 @@ export function RemediationReportClient({ audit, findings }: Props) {
       {/* Main Report Container */}
       <main className="mx-auto max-w-7xl p-6 lg:p-10">
         {/* Document Header */}
-        <section className="mb-8 border-b border-[var(--color-paper-rule)] pb-8">
+        <section className="mb-8 border-b border-[var(--color-rule)] pb-8">
           <div className="flex flex-wrap items-start justify-between gap-6">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <span className="inline-flex items-center rounded border border-[var(--color-paper-rule)] bg-[var(--color-paper-card)] px-2 py-0.5 text-xs text-[var(--color-pencil)]">
+                <span className="inline-flex items-center rounded border border-[var(--color-rule)] bg-[var(--color-paper-2)] px-2 py-0.5 text-[11px] font-mono uppercase tracking-wider text-[var(--color-muted)]">
                   {audit.kind.replace("_", " ")}
                 </span>
-                <span className="text-xs font-mono text-[var(--color-pencil)]">ID: {audit.id}</span>
+                <span className="text-xs font-mono text-[var(--color-muted)]">ID: {audit.id}</span>
               </div>
-              <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-ink)] sm:text-3xl">
+              <h1 className="text-2xl font-light tracking-tight text-[var(--color-ink)] sm:text-3xl font-heading">
                 {audit.title}
               </h1>
-              <p className="mt-1 text-sm text-[var(--color-pencil)]">
+              <p className="mt-1 text-xs text-[var(--color-muted)] font-mono">
                 Generated {new Date(audit.createdAt).toLocaleDateString("en-US", {
                   year: "numeric",
                   month: "long",
@@ -153,31 +153,33 @@ export function RemediationReportClient({ audit, findings }: Props) {
             {/* Metadata Badges */}
             <div className="flex flex-wrap gap-2 text-xs">
               <div className="surface-card p-2.5 min-w-[130px]">
-                <div className="flex items-center gap-1.5 text-[var(--color-pencil)]">
-                  <Cpu className="h-3.5 w-3.5 text-[var(--color-pencil)]" />
-                  <span>Analyzer</span>
+                <div className="flex items-center gap-1.5 text-[var(--color-muted)]">
+                  <Cpu className="h-3.5 w-3.5" />
+                  <span className="text-[11px] uppercase tracking-wider font-mono">Analyzer</span>
                 </div>
-                <div className="mt-1 font-semibold text-[var(--color-ink)]">
+                <div className="mt-1 font-medium text-[var(--color-ink)]">
                   {audit.analyzer === "qwen-vl" ? "Qwen2.5-VL" : "Sharp pixel engine"}
                 </div>
               </div>
 
               {audit.analyzerMs && (
                 <div className="surface-card p-2.5 min-w-[120px]">
-                  <div className="flex items-center gap-1.5 text-[var(--color-pencil)]">
-                    <Clock className="h-3.5 w-3.5 text-[var(--color-pencil)]" />
-                    <span>Latency</span>
+                  <div className="flex items-center gap-1.5 text-[var(--color-muted)]">
+                    <Clock className="h-3.5 w-3.5" />
+                    <span className="text-[11px] uppercase tracking-wider font-mono">Latency</span>
                   </div>
-                  <div className="mt-1 font-semibold font-mono text-[var(--color-ink)]">{audit.analyzerMs} ms</div>
+                  <div className="mt-1 font-mono text-[var(--color-ink)] num">
+                    {audit.analyzerMs}<span className="u text-[10px] ml-0.5">ms</span>
+                  </div>
                 </div>
               )}
 
               <div className="surface-card p-2.5 min-w-[130px]">
-                <div className="flex items-center gap-1.5 text-[var(--color-pencil)]">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-[#2b8a3e]" />
-                  <span>Review status</span>
+                <div className="flex items-center gap-1.5 text-[var(--color-muted)]">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-[var(--color-accent)]" />
+                  <span className="text-[11px] uppercase tracking-wider font-mono">Review status</span>
                 </div>
-                <div className="mt-1 font-semibold text-[#2b8a3e]">
+                <div className="mt-1 font-mono text-[var(--color-accent)] text-xs">
                   {confirmedCount} / {totalFindings} verified
                 </div>
               </div>
@@ -187,20 +189,20 @@ export function RemediationReportClient({ audit, findings }: Props) {
           {/* Executive Summary Metrics Strip */}
           <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div className="surface-card p-3">
-              <div className="text-xs text-[var(--color-pencil)]">Total defect flags</div>
-              <div className="mt-1 text-xl font-semibold font-mono text-[var(--color-ink)]">{totalFindings}</div>
+              <div className="text-[11px] uppercase tracking-wider font-mono text-[var(--color-muted)]">Total defect flags</div>
+              <div className="mt-1 text-2xl font-light font-mono text-[var(--color-ink)] num">{totalFindings}</div>
             </div>
-            <div className="surface-card p-3 border-l-2 border-l-[#c92a2a]">
-              <div className="text-xs text-[var(--color-pencil)]">Critical severity</div>
-              <div className="mt-1 text-xl font-semibold font-mono text-[#c92a2a]">{criticalCount}</div>
+            <div className="surface-card p-3 border-l-2 border-l-[var(--color-vermilion)]">
+              <div className="text-[11px] uppercase tracking-wider font-mono text-[var(--color-muted)]">Critical severity</div>
+              <div className="mt-1 text-2xl font-light font-mono text-[var(--color-vermilion)] num">{criticalCount}</div>
             </div>
-            <div className="surface-card p-3 border-l-2 border-l-[#d97706]">
-              <div className="text-xs text-[var(--color-pencil)]">Major severity</div>
-              <div className="mt-1 text-xl font-semibold font-mono text-[#7a3e00]">{majorCount}</div>
+            <div className="surface-card p-3 border-l-2 border-l-[var(--color-sienna)]">
+              <div className="text-[11px] uppercase tracking-wider font-mono text-[var(--color-muted)]">Major severity</div>
+              <div className="mt-1 text-2xl font-light font-mono text-[var(--color-sienna)] num">{majorCount}</div>
             </div>
-            <div className="surface-card p-3 border-l-2 border-l-[#2b8a3e]">
-              <div className="text-xs text-[var(--color-pencil)]">Minor severity</div>
-              <div className="mt-1 text-xl font-semibold font-mono text-[#1b5e20]">{minorCount}</div>
+            <div className="surface-card p-3 border-l-2 border-l-[var(--color-accent)]">
+              <div className="text-[11px] uppercase tracking-wider font-mono text-[var(--color-muted)]">Minor severity</div>
+              <div className="mt-1 text-2xl font-light font-mono text-[var(--color-accent)] num">{minorCount}</div>
             </div>
           </div>
         </section>
@@ -210,27 +212,27 @@ export function RemediationReportClient({ audit, findings }: Props) {
           {/* Visual Artifact with Defect Reticles */}
           <section className="lg:col-span-5 flex flex-col gap-4 print:w-full print:mb-8 print:break-inside-avoid">
             <div className="flex items-center justify-between">
-              <h2 className="text-xs font-semibold text-[var(--color-ink)] flex items-center gap-2">
+              <h2 className="text-xs font-mono uppercase tracking-wider text-[var(--color-ink)] flex items-center gap-2">
                 <Crosshair className="h-3.5 w-3.5 text-[var(--color-accent)]" />
                 Annotated artifact view
               </h2>
               <div className="flex items-center gap-1 text-xs print:hidden">
                 <button
                   onClick={() => setViewMode("annotated_png")}
-                  className={`px-2 py-0.5 rounded transition border ${
+                  className={`px-2.5 py-1 rounded transition border text-xs font-mono ${
                     viewMode === "annotated_png"
-                      ? "border-[var(--color-ink)] bg-[var(--color-paper-card)] text-[var(--color-ink)] font-semibold shadow-xs"
-                      : "border-transparent text-[var(--color-pencil)] hover:text-[var(--color-ink)]"
+                      ? "border-[var(--color-rule-2)] bg-[var(--color-paper-3)] text-[var(--color-accent)] font-medium"
+                      : "border-transparent text-[var(--color-muted)] hover:text-[var(--color-ink)]"
                   }`}
                 >
                   Composited
                 </button>
                 <button
                   onClick={() => setViewMode("interactive")}
-                  className={`px-2 py-0.5 rounded transition border ${
+                  className={`px-2.5 py-1 rounded transition border text-xs font-mono ${
                     viewMode === "interactive"
-                      ? "border-[var(--color-ink)] bg-[var(--color-paper-card)] text-[var(--color-ink)] font-semibold shadow-xs"
-                      : "border-transparent text-[var(--color-pencil)] hover:text-[var(--color-ink)]"
+                      ? "border-[var(--color-rule-2)] bg-[var(--color-paper-3)] text-[var(--color-accent)] font-medium"
+                      : "border-transparent text-[var(--color-muted)] hover:text-[var(--color-ink)]"
                   }`}
                 >
                   Interactive
@@ -241,7 +243,7 @@ export function RemediationReportClient({ audit, findings }: Props) {
             {/* Artifact Container */}
             <div className="surface-card p-2 overflow-hidden print:border-none print:shadow-none print:p-0 print:overflow-visible print:bg-transparent">
               {viewMode === "annotated_png" ? (
-                <div className="relative overflow-hidden rounded flex items-center justify-center bg-[var(--color-paper-warm)]">
+                <div className="relative overflow-hidden rounded flex items-center justify-center bg-[var(--color-paper-3)]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={`/api/report/${audit.id}/image`}
@@ -251,7 +253,7 @@ export function RemediationReportClient({ audit, findings }: Props) {
                   />
                 </div>
               ) : (
-                <div className="relative overflow-hidden rounded select-none bg-[var(--color-paper-warm)]">
+                <div className="relative overflow-hidden rounded select-none bg-[var(--color-paper-3)]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={audit.imageSrc}
@@ -268,10 +270,10 @@ export function RemediationReportClient({ audit, findings }: Props) {
                     const isMajor = f.severity === "major";
 
                     const borderClass = isCritical
-                      ? "border-[#c92a2a] bg-[#c92a2a]/15 text-[#c92a2a]"
+                      ? "border-[var(--color-vermilion)] bg-[var(--color-vermilion)]/15 text-[var(--color-vermilion)]"
                       : isMajor
-                      ? "border-[#d97706] bg-[#d97706]/15 text-[#7a3e00]"
-                      : "border-[#2b8a3e] bg-[#2b8a3e]/15 text-[#1b5e20]";
+                      ? "border-[var(--color-sienna)] bg-[var(--color-sienna)]/15 text-[var(--color-sienna)]"
+                      : "border-[var(--color-accent)] bg-[var(--color-accent)]/15 text-[var(--color-accent)]";
 
                     return (
                       <div
@@ -283,12 +285,12 @@ export function RemediationReportClient({ audit, findings }: Props) {
                           width: `${f.bbox.w * 100}%`,
                           height: `${f.bbox.h * 100}%`,
                         }}
-                        className={`absolute border-2 cursor-pointer transition-all duration-150 rounded ${borderClass} ${
-                          isSelected ? "ring-2 ring-[var(--color-ink)] z-20 shadow-sm" : "z-10"
+                        className={`absolute border cursor-pointer transition-all duration-150 rounded ${borderClass} ${
+                          isSelected ? "ring-2 ring-[var(--color-accent)] z-20" : "z-10"
                         }`}
                       >
                         <div
-                          className="absolute -top-5 left-0 rounded px-1.5 py-0.5 text-[10px] font-mono font-bold tracking-tight shadow-xs bg-[var(--color-paper-card)] border border-[var(--color-paper-rule)] text-[var(--color-ink)]"
+                          className="absolute -top-5 left-0 rounded px-1.5 py-0.5 text-[10px] font-mono tracking-tight bg-[var(--color-paper-2)] border border-[var(--color-rule)] text-[var(--color-ink)]"
                         >
                           #{idx + 1} {f.category}
                         </div>
@@ -299,7 +301,7 @@ export function RemediationReportClient({ audit, findings }: Props) {
               )}
             </div>
 
-            <p className="text-xs font-mono text-[var(--color-pencil)] text-center">
+            <p className="text-xs font-mono text-[var(--color-muted)] text-center">
               Targeted visual evidence mapped to WCAG 2.2 Success Criteria.
             </p>
           </section>
@@ -307,11 +309,11 @@ export function RemediationReportClient({ audit, findings }: Props) {
           {/* Remediation Catalog */}
           <section className="lg:col-span-7 flex flex-col gap-6 print:w-full">
             <div className="flex items-center justify-between">
-              <h2 className="text-xs font-semibold text-[var(--color-ink)] flex items-center gap-2">
-                <Layers className="h-3.5 w-3.5 text-[var(--color-pencil)]" />
+              <h2 className="text-xs font-mono uppercase tracking-wider text-[var(--color-ink)] flex items-center gap-2">
+                <Layers className="h-3.5 w-3.5 text-[var(--color-muted)]" />
                 Actionable remediation specifications
               </h2>
-              <span className="text-xs font-mono text-[var(--color-pencil)]">
+              <span className="text-xs font-mono text-[var(--color-muted)]">
                 {findings.length} issues identified
               </span>
             </div>
@@ -327,41 +329,41 @@ export function RemediationReportClient({ audit, findings }: Props) {
                     key={f.id}
                     id={`finding-${f.id}`}
                     onClick={() => setSelectedFindingId(f.id)}
-                    className={`surface-card p-5 transition-all print:break-inside-avoid ${
+                    className={`surface-card p-5 transition-all print:break-inside-avoid cursor-pointer ${
                       isSelected
-                        ? "ring-2 ring-[var(--color-ink)]"
-                        : "hover:border-[var(--color-pencil)]"
+                        ? "border-[var(--color-accent)] ring-1 ring-[var(--color-accent)]"
+                        : "hover:border-[var(--color-rule-2)]"
                     }`}
                   >
                     {/* Finding Header */}
-                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--color-paper-rule)] pb-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--color-rule)] pb-3">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-[var(--color-ink)]">#{idx + 1}</span>
+                        <span className="font-mono text-xs text-[var(--color-ink)]">#{idx + 1}</span>
                         <span
-                          className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${
+                          className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-mono uppercase tracking-wider ${
                             f.severity === "critical"
-                              ? "bg-[#c92a2a]/10 text-[#c92a2a] border border-[#c92a2a]/30"
+                              ? "bg-[var(--color-vermilion)]/10 text-[var(--color-vermilion)] border border-[var(--color-vermilion)]/30 border-l-2 border-l-[var(--color-vermilion)]"
                               : f.severity === "major"
-                              ? "bg-[#d97706]/10 text-[#7a3e00] border border-[#d97706]/30"
-                              : "bg-[#2b8a3e]/10 text-[#1b5e20] border border-[#2b8a3e]/30"
+                              ? "bg-[var(--color-sienna)]/10 text-[var(--color-sienna)] border border-[var(--color-sienna)]/30 border-l-2 border-l-[var(--color-sienna)]"
+                              : "bg-[var(--color-accent)]/10 text-[var(--color-accent)] border border-[var(--color-accent)]/30 border-l-2 border-l-[var(--color-accent)]"
                           }`}
                         >
                           {sevMeta.label}
                         </span>
-                        <span className="inline-flex items-center rounded border border-[var(--color-paper-rule)] bg-[var(--color-paper-warm)] px-2 py-0.5 text-xs text-[var(--color-pencil)]">
+                        <span className="inline-flex items-center rounded border border-[var(--color-rule)] bg-[var(--color-paper-3)] px-2 py-0.5 text-xs text-[var(--color-muted)] font-mono">
                           {catMeta.label}
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-2 text-xs font-mono text-[var(--color-pencil)]">
+                      <div className="flex items-center gap-2 text-xs font-mono text-[var(--color-muted)]">
                         {f.wcag && (
-                          <span className="bg-[var(--color-paper-warm)] px-2 py-0.5 rounded border border-[var(--color-paper-rule)]">
+                          <span className="bg-[var(--color-paper-3)] px-2 py-0.5 rounded border border-[var(--color-rule)]">
                             {f.wcag}
                           </span>
                         )}
                         {f.confidence != null && (
-                          <span>
-                            {Math.round(f.confidence * 100)}% conf
+                          <span className="num">
+                            {Math.round(f.confidence * 100)}<span className="u text-[10px] ml-0.5">%</span> conf
                           </span>
                         )}
                       </div>
@@ -369,25 +371,25 @@ export function RemediationReportClient({ audit, findings }: Props) {
 
                     {/* Defect Title & Explanation */}
                     <div className="mt-3">
-                      <h3 className="text-base font-semibold text-[var(--color-ink)] tracking-tight">{f.title}</h3>
-                      <p className="mt-1 text-xs text-[var(--color-pencil)] leading-relaxed">{f.explanation}</p>
+                      <h3 className="text-sm font-medium text-[var(--color-ink)] tracking-tight">{f.title}</h3>
+                      <p className="mt-1 text-xs text-[var(--color-muted)] leading-relaxed">{f.explanation}</p>
                     </div>
 
                     {/* Concrete Remediation Fix */}
-                    <div className="mt-3 rounded border border-[var(--color-paper-rule)] bg-[var(--color-paper-warm)] p-3">
-                      <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--color-ink)] mb-1">
-                        <CheckCircle2 className="h-3.5 w-3.5 text-[#2b8a3e]" />
+                    <div className="mt-3 rounded border border-[var(--color-rule)] bg-[var(--color-paper-3)] p-3">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-[var(--color-ink)] mb-1">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-[var(--color-accent)]" />
                         Precise remediation step
                       </div>
-                      <p className="text-xs text-[var(--color-pencil)] leading-relaxed">{f.suggestion}</p>
+                      <p className="text-xs text-[var(--color-muted)] leading-relaxed">{f.suggestion}</p>
                     </div>
 
                     {/* Review metadata strip */}
                     {f.verifiedBy && (
-                      <div className="mt-3 flex items-center justify-between text-xs font-mono text-[var(--color-pencil)]">
+                      <div className="mt-3 flex items-center justify-between text-xs font-mono text-[var(--color-muted)]">
                         <span>Adjudicated by: {f.verifiedBy}</span>
                         {f.humanSeverity && f.humanSeverity !== f.severity && (
-                          <span className="text-[#7a3e00]">
+                          <span className="text-[var(--color-sienna)]">
                             Severity adjusted to: {f.humanSeverity}
                           </span>
                         )}
@@ -401,13 +403,13 @@ export function RemediationReportClient({ audit, findings }: Props) {
         </div>
 
         {/* Methodology & Limitations Footer Note */}
-        <section className="mt-16 surface-card p-6 print:border-[var(--color-paper-rule)]">
+        <section className="mt-16 surface-card p-6 print:border-[var(--color-rule)]">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h4 className="text-sm font-semibold text-[var(--color-ink)]">
+              <h4 className="text-sm font-medium text-[var(--color-ink)] font-heading">
                 Limitations & methodology notice
               </h4>
-              <p className="mt-1 text-xs text-[var(--color-pencil)] max-w-2xl leading-relaxed">
+              <p className="mt-1 text-xs text-[var(--color-muted)] max-w-2xl leading-relaxed">
                 Automated vision-language accessibility audits evaluate visual-only defects (contrast, typography, color coding, visual touch bounds). They do not replace manual keyboard navigation or screen reader assistive hardware audits.
               </p>
             </div>

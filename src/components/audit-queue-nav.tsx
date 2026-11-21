@@ -116,15 +116,13 @@ export function AuditQueueNav({
   const visiblePages = getVisiblePages(currentPage, totalPages);
 
   const btnBase =
-    "inline-flex items-center justify-center rounded-[6px] border font-sans text-[12px] font-medium transition select-none shadow-sm";
+    "inline-flex items-center justify-center rounded-full border font-sans text-[12px] transition select-none min-h-[36px] min-w-[36px]";
   const btnActive =
-    "border-[var(--color-accent)] bg-[var(--color-accent)] text-[var(--color-accent-ink)] font-semibold";
+    "border-[var(--color-accent)] bg-[var(--color-accent)] text-[var(--color-accent-ink)] font-medium";
   const btnInactive =
-    "border-[var(--color-rule)] bg-[var(--color-paper-2)] text-[var(--color-ink)] hover:border-[var(--color-ink)]";
+    "border-[var(--color-rule)] bg-[var(--color-paper-2)] text-[var(--color-ink-2)] hover:border-[var(--color-rule-2)] hover:text-[var(--color-ink)]";
   const btnDisabled =
-    "border-[var(--color-rule)] bg-[var(--color-paper-3)] text-[var(--color-muted)] cursor-not-allowed opacity-40 pointer-events-none";
-  const arrowSz = "h-8 w-8 text-[14px]";
-  const pageSz = "h-8 min-w-[32px] px-2";
+    "border-[var(--color-rule)] bg-[var(--color-paper)] text-[var(--color-muted)] cursor-not-allowed opacity-30 pointer-events-none";
 
   return (
     <div className="mt-6 space-y-3 font-sans">
@@ -132,7 +130,7 @@ export function AuditQueueNav({
       <div className="flex flex-wrap gap-x-4 gap-y-2 text-[12px]">
         {FILTERS.map((f) => (
           <div key={f.key} className="flex items-center gap-1.5">
-            <span className="text-[11.5px] font-semibold text-[var(--color-muted)]">
+            <span className="text-[11.5px] text-[var(--color-muted)]">
               {f.label}:
             </span>
             <div className="flex items-center gap-1">
@@ -145,10 +143,10 @@ export function AuditQueueNav({
                     key={opt.value}
                     href={filterHref(currentFilters, f.key, opt.value)}
                     scroll={false}
-                    className={`h-7 px-2.5 rounded-[4px] border font-sans text-[11.5px] flex items-center justify-center transition ${
+                    className={`h-7 px-2.5 rounded-full border font-sans text-[11.5px] flex items-center justify-center transition ${
                       active
-                        ? "bg-[var(--color-accent)] text-[var(--color-accent-ink)] border-[var(--color-accent)] font-semibold"
-                        : "bg-[var(--color-paper-2)] text-[var(--color-ink)] border-[var(--color-rule)] hover:border-[var(--color-ink)]"
+                        ? "bg-[var(--color-accent)] text-[var(--color-accent-ink)] border-[var(--color-accent)]"
+                        : "bg-[var(--color-paper-2)] text-[var(--color-muted)] border-[var(--color-rule)] hover:text-[var(--color-ink)] hover:border-[var(--color-rule-2)]"
                     }`}
                   >
                     {opt.label}
@@ -164,18 +162,18 @@ export function AuditQueueNav({
       {totalPages > 1 && (
         <div className="flex items-center justify-between border-t border-[var(--color-rule)] pt-3.5">
           {/* Left info */}
-          <span className="font-mono text-[11.5px] text-[var(--color-muted)]">
-            PAGE {currentPage} / {totalPages} · {totalCount} TOTAL
+          <span className="num tabular font-mono text-[11.5px] text-[var(--color-muted)]">
+            Page {currentPage} / {totalPages} · {totalCount} total
           </span>
 
           {/* Nav arrows + page numbers */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             {/* « First */}
             <Link
               href={pageHref(currentFilters, 1)}
               scroll={false}
               aria-label="First page"
-              className={`${btnBase} ${arrowSz} ${
+              className={`${btnBase} ${
                 currentPage <= 1 ? btnDisabled : btnInactive
               }`}
             >
@@ -187,7 +185,7 @@ export function AuditQueueNav({
               href={pageHref(currentFilters, Math.max(1, currentPage - 1))}
               scroll={false}
               aria-label="Previous page"
-              className={`${btnBase} ${arrowSz} ${
+              className={`${btnBase} ${
                 currentPage <= 1 ? btnDisabled : btnInactive
               }`}
             >
@@ -202,7 +200,7 @@ export function AuditQueueNav({
                 scroll={false}
                 aria-label={`Page ${p}`}
                 aria-current={p === currentPage ? "page" : undefined}
-                className={`${btnBase} ${pageSz} ${
+                className={`${btnBase} px-3 ${
                   p === currentPage ? btnActive : btnInactive
                 }`}
               >
@@ -215,7 +213,7 @@ export function AuditQueueNav({
               href={pageHref(currentFilters, Math.min(totalPages, currentPage + 1))}
               scroll={false}
               aria-label="Next page"
-              className={`${btnBase} ${arrowSz} ${
+              className={`${btnBase} ${
                 currentPage >= totalPages ? btnDisabled : btnInactive
               }`}
             >
@@ -227,7 +225,7 @@ export function AuditQueueNav({
               href={pageHref(currentFilters, totalPages)}
               scroll={false}
               aria-label="Last page"
-              className={`${btnBase} ${arrowSz} ${
+              className={`${btnBase} ${
                 currentPage >= totalPages ? btnDisabled : btnInactive
               }`}
             >

@@ -72,14 +72,14 @@ export interface WorkspaceFinding {
 
 const SEV_BORDER: Record<string, string> = {
   critical: "border-l-[var(--color-vermilion)]",
-  major: "border-l-[var(--color-accent)]",
-  minor: "border-l-[var(--color-water)]",
+  major: "border-l-[var(--color-sienna)]",
+  minor: "border-l-[var(--point-mid)]",
 };
 
 const SEV_STROKE: Record<string, string> = {
-  critical: "#c92a2a",
-  major: "#d97706",
-  minor: "#228be6",
+  critical: "var(--color-vermilion)",
+  major: "var(--color-sienna)",
+  minor: "var(--point-mid)",
 };
 
 export function AuditWorkspace({
@@ -292,29 +292,29 @@ export function AuditWorkspace({
         <div className="min-w-0">
           <Link
             href="/#queue"
-            className="mb-2.5 inline-flex items-center gap-1.5 font-sans text-[12px] font-medium text-[var(--color-muted)] transition hover:text-[var(--color-ink)]"
+            className="mb-2.5 inline-flex items-center gap-1.5 font-sans text-[12px] text-[var(--color-muted)] transition hover:text-[var(--color-ink)]"
           >
             <ArrowLeft size={13} />
             <span>Return to inspection queue</span>
           </Link>
 
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--color-ink)] font-display flex items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl font-light tracking-tight text-[var(--color-ink)] font-display flex items-center gap-3">
             <span>{audit.title}</span>
           </h1>
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-[4px] border border-[var(--color-rule)] bg-[var(--color-paper-2)] px-2.5 py-1 font-sans text-[11.5px] font-medium text-[var(--color-ink)]">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-rule)] bg-[var(--color-paper-2)] px-2.5 py-1 font-sans text-[11.5px] text-[var(--color-ink)]">
               {audit.kind === "poster" ? (
-                <Presentation size={13} className="text-[var(--color-accent-ink)]" />
+                <Presentation size={13} className="text-[var(--color-accent)]" />
               ) : (
-                <MonitorSmartphone size={13} className="text-[var(--color-water)]" />
+                <MonitorSmartphone size={13} className="text-[var(--point-mid)]" />
               )}
               {audit.kind === "poster" ? "Campus Poster" : "UI Screen"}
             </span>
 
             <AnalyzerChip analyzer={audit.analyzer} online={vlmOnline} />
 
-            <span className="tabular rounded-[4px] border border-[var(--color-rule)] bg-[var(--color-paper-2)] px-2.5 py-1 font-mono text-[11px] text-[var(--color-muted)]">
+            <span className="tabular num rounded-full border border-[var(--color-rule)] bg-[var(--color-paper-2)] px-2.5 py-1 font-mono text-[11px] text-[var(--color-muted)]">
               {fmtDate(audit.createdAt)}
               {audit.width ? ` · ${audit.width}×${audit.height}px` : ""}
             </span>
@@ -325,7 +325,7 @@ export function AuditWorkspace({
         <div className="flex flex-wrap items-center gap-2 font-sans text-[12px]">
           <Link
             href={`/report/${audit.id}`}
-            className="btn btn--primary text-[12px] h-9 px-3.5"
+            className="btn btn--primary btn--sm"
           >
             <FileText size={14} />
             <span>Executive report →</span>
@@ -333,7 +333,7 @@ export function AuditWorkspace({
           <button
             onClick={() => void reanalyze(false)}
             disabled={acting !== null}
-            className="btn text-[12px] h-9 px-3.5 disabled:opacity-50"
+            className="btn btn--line btn--sm disabled:opacity-50"
           >
             {acting === "reanalyze" ? (
               <Loader2 size={14} className="animate-spin text-[var(--color-accent)]" />
@@ -345,7 +345,7 @@ export function AuditWorkspace({
           <button
             onClick={destroy}
             disabled={acting !== null}
-            className="btn text-[12px] h-9 px-3 border-[var(--color-vermilion)]/40 text-[var(--color-vermilion)] hover:bg-[var(--color-vermilion-soft)] disabled:opacity-50"
+            className="btn btn--line btn--sm border-[var(--color-vermilion)]/40 text-[var(--color-vermilion)] hover:bg-[var(--color-vermilion)]/10 disabled:opacity-50"
           >
             {acting === "delete" ? (
               <Loader2 size={14} className="animate-spin" />
@@ -358,9 +358,9 @@ export function AuditWorkspace({
       </div>
 
       {notice && (
-        <div className="my-4 rounded-[6px] border border-[var(--color-accent)] bg-[var(--color-accent-soft)] px-4 py-3 font-sans text-[12.5px] text-[var(--color-accent-ink)] flex items-center justify-between font-medium">
+        <div className="my-4 rounded-[var(--radius-card)] border border-[var(--color-accent)] bg-[var(--color-paper-2)] px-4 py-3 font-sans text-[12.5px] text-[var(--color-accent)] flex items-center justify-between">
           <span>{notice}</span>
-          <button onClick={() => setNotice("")} className="text-[var(--color-accent-ink)] hover:opacity-70">
+          <button onClick={() => setNotice("")} className="text-[var(--color-accent)] hover:opacity-70">
             <X size={14} />
           </button>
         </div>
@@ -456,12 +456,12 @@ export function AuditWorkspace({
 
                         // Determine tactical border & tint color classes
                         const colorCls = isHuman
-                          ? "border-violet-600 bg-violet-600/10 text-violet-900"
+                          ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[var(--color-accent)]"
                           : sev === "critical"
-                          ? "border-[var(--color-vermilion)] bg-[var(--color-vermilion-soft)]/60 text-[var(--color-vermilion)]"
+                          ? "border-[var(--color-vermilion)] bg-[var(--color-vermilion)]/10 text-[var(--color-vermilion)]"
                           : sev === "major"
-                          ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)]/60 text-[var(--color-accent-ink)]"
-                          : "border-[var(--color-water)] bg-[var(--color-paper-2)]/70 text-[var(--color-ink)]";
+                          ? "border-[var(--color-sienna)] bg-[var(--color-sienna)]/10 text-[var(--color-sienna)]"
+                          : "border-[var(--point-mid)] bg-[var(--point-mid)]/10 text-[var(--point-mid)]";
 
                         return (
                           <div
@@ -491,7 +491,7 @@ export function AuditWorkspace({
 
                             {/* Floating Window Identification Pill */}
                             <div
-                              className={`absolute -top-6 left-0 flex items-center gap-1.5 whitespace-nowrap rounded-[4px] px-2 py-0.5 font-mono text-[9.5px] font-bold shadow-md border ${
+                              className={`absolute -top-6 left-0 flex items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-0.5 font-mono text-[9.5px] border ${
                                 active
                                   ? "bg-[var(--color-accent)] text-[var(--color-accent-ink)] border-[var(--color-accent)]"
                                   : "bg-[var(--color-paper-2)] text-[var(--color-ink)] border-[var(--color-rule)]"
@@ -511,7 +511,7 @@ export function AuditWorkspace({
                             {/* Active Reticle Target */}
                             {active && (
                               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                <Crosshair size={18} className="text-[var(--color-accent-ink)]" />
+                                <Crosshair size={18} className="text-[var(--color-accent)]" />
                               </div>
                             )}
 
@@ -569,12 +569,12 @@ export function AuditWorkspace({
                     sub: "Deuteranopia",
                   },
                 ].map((s) => (
-                  <div key={s.k} className="rounded-lg border border-hairline/60 bg-surface-0/60 p-2.5">
-                    <p className="text-[10px] uppercase text-inkdim tracking-wider font-semibold">
+                  <div key={s.k} className="rounded-[var(--radius-card)] border border-[var(--color-rule)] bg-[var(--color-paper-2)] p-2.5">
+                    <p className="text-[10px] text-[var(--color-muted)] font-mono">
                       {s.k}
                     </p>
-                    <p className="mt-1 text-[16px] font-bold text-white">{s.v}</p>
-                    <p className="text-[9px] text-brand-light/70">{s.sub}</p>
+                    <p className="mt-1 text-[15px] text-[var(--color-ink)] font-mono num tabular">{s.v}</p>
+                    <p className="text-[9px] text-[var(--color-muted)]">{s.sub}</p>
                   </div>
                 ))}
               </div>
@@ -588,9 +588,9 @@ export function AuditWorkspace({
           <div className="surface-card flex items-center justify-between px-4 py-3">
             <SectionLabel badge={`${findings.length} TOTAL`}>Candidate Findings</SectionLabel>
             <div className="tabular font-mono flex items-center gap-2.5 text-[11.5px]">
-              <span className="text-[var(--color-green)] font-bold">{counts.confirmed} TP</span>
-              <span className="text-[var(--color-vermilion)] font-bold">{counts.rejected} FP</span>
-              <span className="text-[var(--color-accent-ink)] font-bold">{counts.pending} In queue</span>
+              <span className="text-[var(--color-accent)]">{counts.confirmed} TP</span>
+              <span className="text-[var(--color-vermilion)]">{counts.rejected} FP</span>
+              <span className="text-[var(--color-sienna)]">{counts.pending} In queue</span>
             </div>
           </div>
 
@@ -601,13 +601,13 @@ export function AuditWorkspace({
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--color-rule)] pb-2.5">
                 {/* View Mode Pills */}
                 <div className="flex items-center gap-1">
-                  <span className="text-[11px] text-[var(--color-muted)] font-semibold uppercase mr-1">View:</span>
+                  <span className="text-[11px] text-[var(--color-muted)] mr-1">View:</span>
                   <button
                     type="button"
                     onClick={() => setViewMode("single")}
-                    className={`rounded-[4px] px-2.5 py-1 text-[11.5px] font-medium transition border ${
+                    className={`rounded-full px-3 py-1 text-[11.5px] transition border ${
                       viewMode === "single"
-                        ? "border-[var(--color-accent)] bg-[var(--color-accent)] text-[var(--color-accent-ink)] font-semibold"
+                        ? "border-[var(--color-accent)] bg-[var(--color-accent)] text-[var(--color-accent-ink)]"
                         : "border-[var(--color-rule)] bg-[var(--color-paper-2)] text-[var(--color-muted)] hover:text-[var(--color-ink)]"
                     }`}
                   >
@@ -616,9 +616,9 @@ export function AuditWorkspace({
                   <button
                     type="button"
                     onClick={() => setViewMode("list")}
-                    className={`rounded-[4px] px-2.5 py-1 text-[11.5px] font-medium transition border ${
+                    className={`rounded-full px-3 py-1 text-[11.5px] transition border ${
                       viewMode === "list"
-                        ? "border-[var(--color-accent)] bg-[var(--color-accent)] text-[var(--color-accent-ink)] font-semibold"
+                        ? "border-[var(--color-accent)] bg-[var(--color-accent)] text-[var(--color-accent-ink)]"
                         : "border-[var(--color-rule)] bg-[var(--color-paper-2)] text-[var(--color-muted)] hover:text-[var(--color-ink)]"
                     }`}
                   >
@@ -635,7 +635,7 @@ export function AuditWorkspace({
                       disabled={activeIndex <= 0}
                       onClick={() => setSelectedId(filteredFindings[0].id)}
                       title="First finding"
-                      className="h-7 w-7 rounded-[4px] border border-[var(--color-rule)] bg-[var(--color-paper-2)] text-[var(--color-ink)] hover:border-[var(--color-ink)] disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center font-bold font-mono text-[11px]"
+                      className="h-7 w-7 rounded-full border border-[var(--color-rule)] bg-[var(--color-paper-2)] text-[var(--color-ink)] hover:border-[var(--color-rule-2)] disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center font-mono text-[11px]"
                     >
                       «
                     </button>
@@ -645,13 +645,13 @@ export function AuditWorkspace({
                       disabled={activeIndex <= 0}
                       onClick={() => setSelectedId(filteredFindings[Math.max(0, activeIndex - 1)].id)}
                       title="Previous finding"
-                      className="h-7 w-7 rounded-[4px] border border-[var(--color-rule)] bg-[var(--color-paper-2)] text-[var(--color-ink)] hover:border-[var(--color-ink)] disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center font-bold text-[13px] font-mono"
+                      className="h-7 w-7 rounded-full border border-[var(--color-rule)] bg-[var(--color-paper-2)] text-[var(--color-ink)] hover:border-[var(--color-rule-2)] disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center text-[13px] font-mono"
                     >
                       ‹
                     </button>
 
                     {/* Counter readout */}
-                    <span className="px-2 py-0.5 rounded-[4px] bg-[var(--color-paper-3)] border border-[var(--color-rule)] text-[var(--color-ink)] font-bold font-mono tabular text-[11px]">
+                    <span className="px-2.5 py-0.5 rounded-full bg-[var(--color-paper-3)] border border-[var(--color-rule)] text-[var(--color-ink)] font-mono num tabular text-[11px]">
                       #{String(activeIndex + 1).padStart(2, "0")} / {String(filteredFindings.length).padStart(2, "0")}
                     </span>
 
@@ -661,11 +661,11 @@ export function AuditWorkspace({
                       disabled={activeIndex >= filteredFindings.length - 1}
                       onClick={() =>
                         setSelectedId(
-                          filteredFindings[Math.min(filteredFindings.length - 1, activeIndex + 1)].id
+                           filteredFindings[Math.min(filteredFindings.length - 1, activeIndex + 1)].id
                         )
                       }
                       title="Next finding"
-                      className="h-7 w-7 rounded-[4px] border border-[var(--color-rule)] bg-[var(--color-paper-2)] text-[var(--color-ink)] hover:border-[var(--color-ink)] disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center font-bold text-[13px] font-mono"
+                      className="h-7 w-7 rounded-full border border-[var(--color-rule)] bg-[var(--color-paper-2)] text-[var(--color-ink)] hover:border-[var(--color-rule-2)] disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center text-[13px] font-mono"
                     >
                       ›
                     </button>
@@ -677,7 +677,7 @@ export function AuditWorkspace({
                         setSelectedId(filteredFindings[filteredFindings.length - 1].id)
                       }
                       title="Last finding"
-                      className="h-7 w-7 rounded-[4px] border border-[var(--color-rule)] bg-[var(--color-paper-2)] text-[var(--color-ink)] hover:border-[var(--color-ink)] disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center font-bold font-mono text-[11px]"
+                      className="h-7 w-7 rounded-full border border-[var(--color-rule)] bg-[var(--color-paper-2)] text-[var(--color-ink)] hover:border-[var(--color-rule-2)] disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center font-mono text-[11px]"
                     >
                       »
                     </button>
@@ -688,7 +688,7 @@ export function AuditWorkspace({
                         type="button"
                         onClick={() => setSelectedId(nextPendingId)}
                         title="Jump to next pending finding needing review"
-                        className="ml-1 inline-flex items-center gap-1 rounded-[4px] bg-[var(--color-accent-soft)] border border-[var(--color-accent)] px-2 py-1 text-[11px] font-semibold text-[var(--color-accent-ink)] hover:brightness-95 transition"
+                        className="ml-1 inline-flex items-center gap-1 rounded-full bg-[var(--color-paper-3)] border border-[var(--color-accent)]/30 px-2.5 py-1 text-[11px] text-[var(--color-accent)] hover:border-[var(--color-accent)] transition"
                       >
                         <span>Next pending</span>
                         <span>→</span>
@@ -702,7 +702,7 @@ export function AuditWorkspace({
               <div className="space-y-2 font-sans">
                 {/* Severity Filter Row */}
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-[11px] text-[var(--color-muted)] font-semibold uppercase mr-1">Severity:</span>
+                  <span className="text-[11px] text-[var(--color-muted)] mr-1">Severity:</span>
                   {(
                     [
                       ["all", `All (${findings.length})`],
@@ -717,15 +717,15 @@ export function AuditWorkspace({
                         key={val}
                         type="button"
                         onClick={() => setSevFilter(val)}
-                        className={`rounded-[4px] px-2 py-0.5 text-[11px] font-medium transition border ${
+                        className={`rounded-full px-2.5 py-0.5 text-[11px] transition border ${
                           active
                             ? val === "critical"
-                              ? "bg-[var(--color-vermilion-soft)] text-[var(--color-vermilion)] border-[var(--color-vermilion)] font-bold"
+                              ? "bg-[var(--color-paper-3)] text-[var(--color-vermilion)] border-[var(--color-vermilion)]/40 font-medium"
                               : val === "major"
-                              ? "bg-[var(--color-accent-soft)] text-[var(--color-accent-ink)] border-[var(--color-accent)] font-bold"
+                              ? "bg-[var(--color-paper-3)] text-[var(--color-sienna)] border-[var(--color-sienna)]/40 font-medium"
                               : val === "minor"
-                              ? "bg-[var(--color-paper-3)] text-[var(--color-ink)] border-[var(--color-rule)] font-bold"
-                              : "bg-[var(--color-accent)] text-[var(--color-accent-ink)] border-[var(--color-accent)] font-bold"
+                              ? "bg-[var(--color-paper-3)] text-[var(--point-mid)] border-[var(--color-rule)] font-medium"
+                              : "bg-[var(--color-accent)] text-[var(--color-accent-ink)] border-[var(--color-accent)] font-medium"
                             : "bg-[var(--color-paper-2)] border-[var(--color-rule)] text-[var(--color-muted)] hover:text-[var(--color-ink)]"
                         }`}
                       >
@@ -737,7 +737,7 @@ export function AuditWorkspace({
 
                 {/* Status Filter Row */}
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-[11px] text-[var(--color-muted)] font-semibold uppercase mr-1">Status:</span>
+                  <span className="text-[11px] text-[var(--color-muted)] mr-1">Status:</span>
                   {(
                     [
                       ["all", "All"],
@@ -752,9 +752,9 @@ export function AuditWorkspace({
                         key={val}
                         type="button"
                         onClick={() => setStatusFilter(val)}
-                        className={`rounded-[4px] px-2 py-0.5 text-[11px] font-medium transition border ${
+                        className={`rounded-full px-2.5 py-0.5 text-[11px] transition border ${
                           active
-                            ? "bg-[var(--color-accent)] text-[var(--color-accent-ink)] border-[var(--color-accent)] font-bold"
+                            ? "bg-[var(--color-accent)] text-[var(--color-accent-ink)] border-[var(--color-accent)] font-medium"
                             : "bg-[var(--color-paper-2)] border-[var(--color-rule)] text-[var(--color-muted)] hover:text-[var(--color-ink)]"
                         }`}
                       >
@@ -783,19 +783,19 @@ export function AuditWorkspace({
           {/* Finding Cards List */}
           <div className="space-y-3">
             {findings.length === 0 && (
-              <div className="surface-card p-8 text-center font-mono">
-                <CheckCircle2 size={28} className="mx-auto text-emerald-400 mb-2" />
-                <p className="text-[14px] font-bold text-white">No Issues Detected</p>
-                <p className="mt-1 text-[12px] text-inkdim leading-relaxed">
+              <div className="surface-card p-8 text-center font-sans">
+                <CheckCircle2 size={28} className="mx-auto text-[var(--color-accent)] mb-2" />
+                <p className="text-[14px] text-[var(--color-ink)]">No issues detected</p>
+                <p className="mt-1 text-[12px] text-[var(--color-muted)] leading-relaxed">
                   Both models reported 0 candidate defects. If you spot a violation they missed, report it below to register a False Negative.
                 </p>
               </div>
             )}
 
             {findings.length > 0 && filteredFindings.length === 0 && (
-              <div className="surface-card p-8 text-center font-mono">
-                <p className="text-[13px] font-bold text-white">No findings match the current filters</p>
-                <p className="mt-1 text-[11px] text-inkdim">
+              <div className="surface-card p-8 text-center font-sans">
+                <p className="text-[13px] text-[var(--color-ink)]">No findings match the current filters</p>
+                <p className="mt-1 text-[11px] text-[var(--color-muted)]">
                   Try adjusting the severity or status filters above.
                 </p>
                 <button
@@ -804,9 +804,9 @@ export function AuditWorkspace({
                     setSevFilter("all");
                     setStatusFilter("all");
                   }}
-                  className="mt-3 inline-flex items-center gap-1 rounded border border-brand/40 bg-brand/10 px-3 py-1 text-[11px] font-bold text-brand hover:bg-brand/20 transition"
+                  className="mt-3 btn btn--line btn--sm"
                 >
-                  Clear Filters
+                  Clear filters
                 </button>
               </div>
             )}
@@ -816,29 +816,29 @@ export function AuditWorkspace({
               const active = selectedId === f.id;
               const busy = busyIds.has(f.id);
               const human = f.source === "human";
-              const borderCls = SEV_BORDER[f.severity] || "border-l-brand";
+              const borderCls = SEV_BORDER[f.severity] || "border-l-[var(--color-accent)]";
 
               return (
                 <article
                   key={f.id}
                   id={`finding-card-${f.id}`}
                   onClick={() => select(f.id)}
-                  className={`surface-card notebook p-5 cursor-pointer border-l-4 transition-all ${borderCls} ${
+                  className={`surface-card p-5 cursor-pointer border-l-2 transition-all ${borderCls} ${
                     active
-                      ? "ring-2 ring-[var(--color-ink)] bg-[var(--color-paper-2)] shadow-md"
-                      : "hover:border-[var(--color-rule)]"
+                      ? "ring-1 ring-[var(--color-accent)] bg-[var(--color-paper-3)]"
+                      : "hover:border-[var(--color-rule-2)]"
                   }`}
                 >
                   {/* Card Header */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="tabular font-mono text-[11px] font-bold text-[var(--color-muted)]">
+                      <span className="tabular num font-mono text-[11px] text-[var(--color-muted)]">
                         #{String(originalIndex + 1).padStart(2, "0")}
                       </span>
                       <SeverityBadge severity={f.severity} />
                       <CategoryChip category={f.category} />
                       {human && (
-                        <span className="inline-flex items-center gap-1 rounded-[4px] bg-violet-100 border border-violet-300 px-2 py-0.5 font-sans text-[10.5px] text-violet-900 font-medium">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-paper-3)] border border-[var(--color-accent)]/30 px-2 py-0.5 font-sans text-[10.5px] text-[var(--color-accent)]">
                           <UserRound size={11} /> Human Ground Truth
                         </span>
                       )}
@@ -847,18 +847,18 @@ export function AuditWorkspace({
                   </div>
 
                   {/* Finding Title */}
-                  <h3 className="mt-2.5 font-display text-[15px] font-bold leading-snug text-[var(--color-ink)] flex items-center justify-between gap-2">
+                  <h3 className="mt-2.5 font-display text-[15px] font-normal leading-snug text-[var(--color-ink)] flex items-center justify-between gap-2">
                     <span>{f.title}</span>
                     {f.bbox && (
                       <span
-                        className={`shrink-0 inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-[4px] border font-sans ${
+                        className={`shrink-0 inline-flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-full border font-sans ${
                           active
-                            ? "bg-[var(--color-accent)] text-[var(--color-accent-ink)] border-[var(--color-accent)] font-semibold"
+                            ? "bg-[var(--color-accent)] text-[var(--color-accent-ink)] border-[var(--color-accent)]"
                             : "bg-[var(--color-paper-2)] text-[var(--color-muted)] border-[var(--color-rule)] hover:text-[var(--color-ink)]"
                         }`}
                         title="Click to locate on picture"
                       >
-                        <Crosshair size={10} className="text-[var(--color-accent-ink)]" />
+                        <Crosshair size={10} className={active ? "text-[var(--color-accent-ink)]" : "text-[var(--color-accent)]"} />
                         <span>Window #{String(originalIndex + 1).padStart(2, "0")}</span>
                       </span>
                     )}
@@ -969,10 +969,10 @@ export function AuditWorkspace({
                         <button
                           onClick={() => verify(f, "confirmed")}
                           disabled={busy}
-                          className={`inline-flex items-center gap-1.5 rounded-[6px] px-3.5 py-1.5 text-[12px] font-semibold transition border ${
+                          className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] transition border ${
                             f.status === "confirmed"
-                              ? "bg-[var(--color-green)] text-white border-[var(--color-green)] shadow-sm"
-                              : "border-[var(--color-rule)] bg-[var(--color-paper-2)] text-[var(--color-ink)] hover:border-[var(--color-green)] hover:text-[var(--color-green)]"
+                              ? "bg-[var(--color-accent)] text-[var(--color-accent-ink)] border-[var(--color-accent)]"
+                              : "border-[var(--color-rule)] bg-[var(--color-paper-2)] text-[var(--color-accent)] hover:border-[var(--color-accent)]"
                           }`}
                         >
                           <Check size={13} />
@@ -982,22 +982,22 @@ export function AuditWorkspace({
                         <button
                           onClick={() => verify(f, "rejected")}
                           disabled={busy}
-                          className={`inline-flex items-center gap-1.5 rounded-[6px] px-3.5 py-1.5 text-[12px] font-semibold transition border ${
+                          className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] transition border ${
                             f.status === "rejected"
-                              ? "bg-[var(--color-vermilion)] text-white border-[var(--color-vermilion)] shadow-sm"
-                              : "border-[var(--color-rule)] bg-[var(--color-paper-2)] text-[var(--color-ink)] hover:border-[var(--color-vermilion)] hover:text-[var(--color-vermilion)]"
+                              ? "bg-[var(--color-vermilion)] text-white border-[var(--color-vermilion)]"
+                              : "border-[var(--color-rule)] bg-[var(--color-paper-2)] text-[var(--color-vermilion)] hover:border-[var(--color-vermilion)]"
                           }`}
                         >
                           <X size={13} />
-                          <span>False Alarm (FP)</span>
+                          <span>False alarm (FP)</span>
                         </button>
 
                         <button
                           onClick={() => verify(f, "uncertain")}
                           disabled={busy}
-                          className={`inline-flex items-center gap-1 rounded-[6px] px-3 py-1.5 text-[12px] font-medium transition border ${
+                          className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] transition border ${
                             f.status === "uncertain"
-                              ? "bg-[var(--color-ink)] text-white border-[var(--color-ink)]"
+                              ? "bg-[var(--color-paper-3)] text-[var(--color-ink)] border-[var(--color-rule-2)]"
                               : "border-[var(--color-rule)] bg-[var(--color-paper-2)] text-[var(--color-muted)] hover:text-[var(--color-ink)]"
                           }`}
                         >
@@ -1014,7 +1014,7 @@ export function AuditWorkspace({
                           title="Reset status back to pending"
                           disabled={busy}
                           onClick={() => verify(f, "pending")}
-                          className="grid h-7 w-7 place-items-center rounded-[4px] border border-[var(--color-rule)] bg-[var(--color-paper-2)] text-[var(--color-muted)] transition hover:text-[var(--color-ink)] hover:border-[var(--color-ink)]"
+                          className="grid h-7 w-7 place-items-center rounded-full border border-[var(--color-rule)] bg-[var(--color-paper-2)] text-[var(--color-muted)] transition hover:text-[var(--color-ink)] hover:border-[var(--color-rule-2)]"
                         >
                           <RotateCcw size={12} />
                         </button>
@@ -1024,7 +1024,7 @@ export function AuditWorkspace({
                           title="Delete human finding"
                           disabled={busy}
                           onClick={() => removeFinding(f)}
-                          className="grid h-7 w-7 place-items-center rounded-[4px] border border-[var(--color-rule)] bg-[var(--color-paper-2)] text-[var(--color-muted)] transition hover:text-[var(--color-vermilion)] hover:border-[var(--color-vermilion)]"
+                          className="grid h-7 w-7 place-items-center rounded-full border border-[var(--color-rule)] bg-[var(--color-paper-2)] text-[var(--color-muted)] transition hover:text-[var(--color-vermilion)] hover:border-[var(--color-vermilion)]"
                         >
                           <Trash2 size={12} />
                         </button>
@@ -1042,12 +1042,12 @@ export function AuditWorkspace({
                   type="button"
                   disabled={activeIndex <= 0}
                   onClick={() => setSelectedId(filteredFindings[Math.max(0, activeIndex - 1)].id)}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-surface-1 px-3 py-1.5 text-inkdim hover:text-brand hover:border-brand/40 disabled:opacity-30 disabled:pointer-events-none transition"
+                  className="btn btn--line btn--sm inline-flex items-center gap-1.5 disabled:opacity-30 disabled:pointer-events-none"
                 >
-                  <span>‹ Previous Finding</span>
+                  <span>‹ Previous finding</span>
                 </button>
 
-                <span className="text-[10.5px] text-inkdim tabular">
+                <span className="text-[10.5px] text-[var(--color-muted)] num tabular">
                   Finding {activeIndex + 1} of {filteredFindings.length}
                 </span>
 
@@ -1059,9 +1059,9 @@ export function AuditWorkspace({
                       filteredFindings[Math.min(filteredFindings.length - 1, activeIndex + 1)].id
                     )
                   }
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-surface-1 px-3 py-1.5 text-inkdim hover:text-brand hover:border-brand/40 disabled:opacity-30 disabled:pointer-events-none transition"
+                  className="btn btn--line btn--sm inline-flex items-center gap-1.5 disabled:opacity-30 disabled:pointer-events-none"
                 >
-                  <span>Next Finding ›</span>
+                  <span>Next finding ›</span>
                 </button>
               </div>
             )}
@@ -1132,23 +1132,23 @@ function AddFindingForm({ auditId }: { auditId: string }) {
   };
 
   const field =
-    "w-full rounded-lg border border-hairline bg-surface-0 px-3 py-2 font-mono text-[12px] text-white placeholder:text-inkdim/60 outline-none transition focus:border-brand/70";
+    "w-full rounded-[var(--radius-card)] border border-[var(--color-rule)] bg-[var(--color-paper)] px-3 py-2 font-sans text-[12px] text-[var(--color-ink)] placeholder:text-[var(--color-muted)] outline-none transition focus:border-[var(--color-accent)]";
 
   return (
     <div className="surface-card p-5">
       {!open ? (
         <button
           onClick={() => setOpen(true)}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-hairline-bright py-3.5 font-mono text-[12px] font-semibold text-brand transition hover:border-brand hover:bg-brand/[0.05]"
+          className="btn btn--line w-full py-3 text-[12px] rounded-full flex items-center justify-center gap-2"
         >
           <Plus size={14} />
-          <span>Report Missed Violation (Logs False Negative for Recall)</span>
+          <span>Report missed violation (logs false negative for recall)</span>
         </button>
       ) : (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between border-b border-hairline/60 pb-2">
-            <SectionLabel badge="GROUND TRUTH INPUT">Record Model Omission</SectionLabel>
-            <button onClick={() => setOpen(false)} className="text-inkdim hover:text-white">
+        <div className="space-y-3 font-sans">
+          <div className="flex items-center justify-between border-b border-[var(--color-rule)] pb-2">
+            <SectionLabel badge="GROUND TRUTH">Record model omission</SectionLabel>
+            <button onClick={() => setOpen(false)} className="text-[var(--color-muted)] hover:text-[var(--color-ink)]">
               <X size={15} />
             </button>
           </div>
@@ -1170,23 +1170,23 @@ function AddFindingForm({ auditId }: { auditId: string }) {
               onChange={(e) => set("severity")(e.target.value)}
               className={field}
             >
-              <option value="critical">Critical Severity</option>
-              <option value="major">Major Severity</option>
-              <option value="minor">Minor Severity</option>
+              <option value="critical">Critical severity</option>
+              <option value="major">Major severity</option>
+              <option value="minor">Minor severity</option>
             </select>
           </div>
 
           <input
             value={form.title}
             onChange={(e) => set("title")(e.target.value)}
-            placeholder="Short Title (e.g., Unlabeled Schedule Table Header)"
+            placeholder="Short title (e.g. Unlabeled schedule table header)"
             className={field}
           />
 
           <textarea
             value={form.explanation}
             onChange={(e) => set("explanation")(e.target.value)}
-            placeholder="Detailed Explanation: what was missed, who is affected, and what the model overlooked"
+            placeholder="Detailed explanation: what was missed, who is affected, and what the model overlooked"
             rows={3}
             className={`${field} resize-none`}
           />
@@ -1194,7 +1194,7 @@ function AddFindingForm({ auditId }: { auditId: string }) {
           <textarea
             value={form.suggestion}
             onChange={(e) => set("suggestion")(e.target.value)}
-            placeholder="Recommended Fix: exact visual or structural remediation"
+            placeholder="Recommended fix: exact visual or structural remediation"
             rows={2}
             className={`${field} resize-none`}
           />
@@ -1202,11 +1202,11 @@ function AddFindingForm({ auditId }: { auditId: string }) {
           <input
             value={form.wcag}
             onChange={(e) => set("wcag")(e.target.value)}
-            placeholder="WCAG Criterion (e.g. 1.4.3 Contrast Minimum)"
+            placeholder="WCAG criterion (e.g. 1.4.3 Contrast minimum)"
             className={field}
           />
 
-          {error && <p className="font-mono text-[11.5px] text-rose-400">{error}</p>}
+          {error && <p className="font-mono text-[11.5px] text-[var(--color-vermilion)]">{error}</p>}
 
           <button
             onClick={submit}
@@ -1216,10 +1216,10 @@ function AddFindingForm({ auditId }: { auditId: string }) {
               form.explanation.trim().length < 5 ||
               form.suggestion.trim().length < 5
             }
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand to-amber-500 py-2.5 font-mono text-[12.5px] font-bold text-ink-950 shadow-[0_0_20px_-3px_rgba(245,158,11,0.5)] transition hover:brightness-110 disabled:opacity-40"
+            className="btn btn--primary w-full py-2.5 text-[12.5px] rounded-full flex items-center justify-center gap-2"
           >
             {sending ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
-            <span>Commit Ground-Truth Finding</span>
+            <span>Commit ground-truth finding</span>
           </button>
         </div>
       )}

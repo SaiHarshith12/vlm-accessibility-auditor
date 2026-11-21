@@ -13,6 +13,14 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Geologica:CRSV,SHRP,wght@0,0..100,200..500&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body className="min-h-screen bg-[var(--color-paper)] text-[var(--color-ink-2)] antialiased font-sans">
         {/* Top telemetry bar */}
         <div className="border-b border-[var(--color-rule)] bg-[var(--color-paper-2)] text-[11px] font-sans text-[var(--color-muted)] px-6 py-1.5 flex items-center justify-between">

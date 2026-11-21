@@ -1,100 +1,95 @@
-/* Hallmark Theme: Furrow (Working Records) */
-@import url('https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@600;700&family=Red+Hat+Text:wght@400;500;600;700&family=Red+Hat+Mono:wght@400;500;600&display=swap');
+/* Hallmark Theme: Vantage (Reality Capture & Spatial Survey) */
+@import url('https://fonts.googleapis.com/css2?family=Geologica:wght,SHRP@200..500,0..100&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Red Hat Text", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-display: "Red Hat Display", "Red Hat Text", ui-sans-serif, sans-serif;
-  --font-mono: "Red Hat Mono", ui-monospace, monospace;
+  --font-sans: "Geologica", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Geologica", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Geologica", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  /* Furrow Material Tokens */
-  --color-paper: oklch(96% 0.011 85);
-  --color-paper-2: oklch(99.5% 0.005 85);
-  --color-paper-3: oklch(92% 0.016 85);
-  --color-sheet: oklch(99.3% 0.004 85);
+  /* Vantage Material Tokens */
+  --color-paper: oklch(13.5% 0.012 235);
+  --color-paper-2: oklch(17% 0.014 235);
+  --color-paper-3: oklch(21% 0.016 235);
+  --color-sheet: oklch(19% 0.015 235);
 
-  --color-ink: oklch(18% 0.006 60);
-  --color-ink-2: oklch(28% 0.008 60);
-  --color-muted: oklch(44% 0.012 60);
-  --color-rule: oklch(88% 0.013 85);
+  --color-ink: oklch(95% 0.006 230);
+  --color-ink-2: oklch(82% 0.012 230);
+  --color-muted: oklch(66% 0.016 230);
+  --color-rule: oklch(27% 0.014 235);
+  --color-rule-2: oklch(34% 0.016 235);
 
-  --color-accent: oklch(70% 0.19 40);
-  --color-accent-ink: oklch(18% 0.006 60);
-  --color-accent-soft: oklch(91% 0.05 50);
-  --color-focus: oklch(60% 0.19 40);
+  /* Chromatic Lime Signal (Found / Measured / Live) */
+  --color-accent: oklch(89% 0.19 126);
+  --color-accent-hi: oklch(93% 0.17 126);
+  --color-accent-ink: oklch(19% 0.04 126);
+  --color-focus: oklch(89% 0.19 126);
 
-  --color-green: oklch(48% 0.11 150);
-  --color-green-soft: oklch(92% 0.04 150);
-  --color-contour: oklch(62% 0.07 58);
-  --color-water: oklch(60% 0.05 232);
-  --color-hedge: oklch(50% 0.1 150);
+  /* Point Cloud Depth Ramp */
+  --point-lo: oklch(42% 0.04 245);
+  --point-mid: oklch(70% 0.04 232);
+  --point-hi: oklch(96% 0.02 215);
 
-  --color-grid: oklch(90% 0.014 85);
-  --color-grid-strong: oklch(85% 0.018 85);
-
+  /* Semantic Severity */
   --color-vermilion: oklch(55% 0.22 25);
-  --color-vermilion-soft: oklch(93% 0.04 25);
+  --color-sienna: oklch(62% 0.14 40);
+  --color-grass: var(--color-accent);
 
-  /* Semantic mappings to preserve Tailwind utility harmony across existing pages */
-  --color-ink-950: var(--color-paper-3);
-  --color-ink-900: var(--color-paper-3);
-  --color-ink-800: var(--color-paper-3);
-  
+  /* Semantic mappings for Tailwind utility compatibility */
   --color-surface-0: var(--color-paper);
   --color-surface-1: var(--color-paper-2);
-  --color-surface-2: var(--color-sheet);
-  --color-surface-3: var(--color-paper-3);
-  --color-surface-highlight: var(--color-paper-2);
+  --color-surface-2: var(--color-paper-3);
+  --color-surface-3: var(--color-sheet);
+  --color-surface-highlight: var(--color-paper-3);
 
   --color-brand: var(--color-accent);
-  --color-brand-light: oklch(62% 0.18 40);
-  --color-brand-bright: oklch(55% 0.19 40);
-  --color-brand-dark: oklch(45% 0.16 40);
+  --color-brand-light: var(--color-accent-hi);
+  --color-brand-bright: var(--color-accent);
+  --color-brand-dark: oklch(75% 0.15 126);
 
-  --color-pass: var(--color-green);
+  --color-pass: var(--color-accent);
   --color-fail: var(--color-vermilion);
-  --color-warn: var(--color-accent);
-  --color-info: var(--color-water);
-  --color-radar: var(--color-water);
+  --color-warn: var(--color-sienna);
+  --color-info: var(--point-mid);
+  --color-radar: var(--color-accent);
 
   --color-inktext: var(--color-ink);
   --color-inkmuted: var(--color-muted);
-  --color-inkdim: oklch(50% 0.01 60);
+  --color-inkdim: var(--color-muted);
 
   --color-hairline: var(--color-rule);
-  --color-hairline-light: oklch(92% 0.01 85);
+  --color-hairline-light: var(--color-rule-2);
   --color-hairline-amber: var(--color-accent);
 
-  --radius-card: 10px;
-  --radius-entry: 14px;
-  --radius-pill: 6px;
+  --radius-card: 4px;
+  --radius-entry: 6px;
+  --radius-pill: 999px;
   --rule-hair: 1px;
+  --tick: 10px;
 }
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
   --tracking-display: -0.035em;
-  --display-weight: 600;
-  --shadow-card: 0 1px 3px oklch(18% 0.006 60 / 0.06), 0 12px 24px -12px oklch(18% 0.006 60 / 0.12);
-  --shadow-lift: 0 1px 2px oklch(18% 0.006 60 / 0.08), 0 4px 12px -2px oklch(18% 0.006 60 / 0.12), 0 20px 32px -16px oklch(18% 0.006 60 / 0.18);
+  --display-weight: 300;
+  --shadow-card: none;
 }
 
 html {
-  color-scheme: light;
+  color-scheme: dark;
   scroll-behavior: smooth;
   overflow-x: clip;
 }
 
 body {
   background-color: var(--color-paper);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
+  color: var(--color-ink-2);
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-variation-settings: "SHRP" 0;
+  line-height: 1.6;
   overflow-x: clip;
-  background-image:
-    linear-gradient(to right, var(--color-grid) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--color-grid) 1px, transparent 1px);
-  background-size: 32px 32px;
-  background-position: center top;
 }
 
 ::selection {
@@ -107,184 +102,183 @@ body {
   scrollbar-color: var(--color-rule) var(--color-paper);
 }
 
-/* Red Hat Display Headings */
+/* Headings: Geologica 300 with sharpened corners */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
   font-weight: var(--display-weight);
-  color: var(--color-ink);
+  font-variation-settings: "SHRP" 100;
   letter-spacing: var(--tracking-display);
+  line-height: 1.1;
+  color: var(--color-ink);
 }
 
-/* Numerics as Material */
+/* Numerics as Measured Material */
 .tabular, .num {
-  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
+  font-weight: 400;
 }
 
-/* ── Furrow Surfaces & Cards ── */
+.num .u {
+  color: var(--color-muted);
+  font-size: 0.78em;
+  margin-left: 2px;
+}
+
+/* ── Vantage Corner Ticks Frame Pattern ── */
+.ticks {
+  position: relative;
+}
+
+.ticks::before,
+.ticks::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: var(--rule-hair) solid var(--color-rule-2);
+  -webkit-mask: conic-gradient(at var(--tick) var(--tick), transparent 75%, black 0) 0 0 / calc(100% - var(--tick)) calc(100% - var(--tick));
+  mask: conic-gradient(at var(--tick) var(--tick), transparent 75%, black 0) 0 0 / calc(100% - var(--tick)) calc(100% - var(--tick));
+}
+
+/* ── Vantage Surfaces & Cards ── */
 .surface-card {
   background: var(--color-paper-2);
-  border: 1px solid var(--color-rule);
-  box-shadow: var(--shadow-card);
+  border: var(--rule-hair) solid var(--color-rule);
   border-radius: var(--radius-card);
   position: relative;
 }
 
 .surface-card-hover {
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+  transition: border-color 0.15s ease-out, background-color 0.15s ease-out;
 }
 
 .surface-card-hover:hover {
-  border-color: var(--color-ink);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-lift);
-}
-
-/* Waterproof notebook grid */
-.notebook {
-  background-image: 
-    linear-gradient(var(--color-grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--color-grid) 1px, transparent 1px);
-  background-size: 8px 8px;
-  background-color: var(--color-paper-2);
+  border-color: var(--color-rule-2);
+  background-color: var(--color-paper-3);
 }
 
 /* Ruled ledger list */
 .ruled {
-  border-top: 1px solid var(--color-ink);
+  border-top: var(--rule-hair) solid var(--color-rule);
 }
 
 .ruled > * {
-  border-bottom: 1px solid var(--color-rule);
+  border-bottom: var(--rule-hair) solid var(--color-rule);
 }
 
-/* ── Furrow Moulded Keys / Buttons ── */
+/* ── Vantage Pills & Buttons ── */
 .btn {
-  min-height: 44px;
-  border: 1px solid var(--color-rule);
+  min-height: 48px;
+  padding: 0 1.5rem;
+  border: 0;
   border-radius: var(--radius-pill);
-  padding: 0 1rem;
-  font-family: var(--font-sans);
-  font-weight: 500;
-  background: var(--color-paper-2);
-  color: var(--color-ink);
-  box-shadow: inset 0 1px 0 var(--color-sheet), 0 1px 2px oklch(18% 0.006 60 / 0.05);
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 13.5px;
+  line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  font-size: 13px;
+  cursor: pointer;
   user-select: none;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  transition: background 150ms ease-out, transform 100ms ease-out;
 }
 
 .btn:hover {
-  border-color: var(--color-ink);
+  background: var(--color-accent-hi);
 }
 
 .btn:active {
-  transform: translateY(1px);
+  transform: scale(0.98);
 }
 
 .btn--primary {
   background: var(--color-accent);
   color: var(--color-accent-ink);
-  border-color: oklch(60% 0.18 40);
-  box-shadow: inset 0 1px 0 oklch(98% 0.02 50 / 0.4), 0 1px 2px oklch(18% 0.006 60 / 0.1);
-  font-weight: 600;
 }
 
 .btn--primary:hover {
-  filter: brightness(1.04);
+  background: var(--color-accent-hi);
 }
 
-/* Reticle brackets for technical HUD styling */
-.reticle-box {
-  position: relative;
+.btn--line {
+  background: transparent;
+  color: var(--color-ink);
+  box-shadow: inset 0 0 0 var(--rule-hair) var(--color-rule-2);
+  border: 0;
 }
 
-.reticle-box::before,
-.reticle-box::after {
-  content: "";
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  border-color: var(--color-accent);
-  pointer-events: none;
+.btn--line:hover {
+  box-shadow: inset 0 0 0 var(--rule-hair) var(--color-ink);
+  background: var(--color-paper-3);
 }
 
-.reticle-box::before {
-  top: -1px;
-  left: -1px;
-  border-top: 2px solid;
-  border-left: 2px solid;
+.btn--sm {
+  min-height: 36px;
+  padding: 0 1rem;
+  font-size: 12px;
 }
 
-.reticle-box::after {
-  bottom: -1px;
-  right: -1px;
-  border-bottom: 2px solid;
-  border-right: 2px solid;
-}
-
-/* ── Tactical Defect Bounding Box Windows (Surveyor Plot Boundaries) ── */
+/* ── Defect Reticle Window ── */
 .bbox-window {
   position: absolute;
-  border-radius: 4px;
+  border-radius: 2px;
   cursor: pointer;
   pointer-events: auto;
+  transition: border-color 0.12s ease-out;
 }
 
 .bbox-window-critical {
-  border: 2px solid var(--color-vermilion);
-  background-color: oklch(55% 0.22 25 / 0.12);
+  border: 1px solid var(--color-vermilion);
+  background-color: oklch(55% 0.22 25 / 0.08);
 }
 
 .bbox-window-major {
-  border: 2px solid var(--color-accent);
-  background-color: oklch(70% 0.19 40 / 0.12);
+  border: 1px solid var(--color-sienna);
+  background-color: oklch(62% 0.14 40 / 0.08);
 }
 
 .bbox-window-minor {
-  border: 2px solid var(--color-water);
-  background-color: oklch(60% 0.05 232 / 0.12);
+  border: 1px solid var(--point-mid);
+  background-color: oklch(70% 0.04 232 / 0.08);
 }
 
 .bbox-window-human {
-  border: 2px dashed oklch(50% 0.15 300);
-  background-color: oklch(50% 0.15 300 / 0.1);
+  border: 1px dashed var(--color-accent);
+  background-color: oklch(89% 0.19 126 / 0.06);
 }
 
 .bbox-window-active {
-  outline: 2px solid var(--color-ink);
+  outline: 1px solid var(--color-accent);
   outline-offset: 1px;
   z-index: 40 !important;
-  box-shadow: 0 0 0 4px var(--color-accent);
 }
 
 .bbox-window:hover {
-  filter: brightness(0.95);
+  filter: brightness(1.15);
   z-index: 35;
 }
 
-/* Evidence telemetry chips */
+/* Telemetry chip */
 .evidence-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
   border-radius: var(--radius-pill);
-  padding: 0.25rem 0.5rem;
-  font-family: var(--font-mono);
+  padding: 0.2rem 0.6rem;
   font-size: 11px;
-  font-weight: 500;
-  border: 1px solid var(--color-rule);
+  font-weight: 400;
+  border: var(--rule-hair) solid var(--color-rule);
   background-color: var(--color-paper-2);
-  color: var(--color-ink);
+  color: var(--color-ink-2);
 }
 
 /* ─────────────────────────────────────────────────
-   PRINT / PDF EXPORT OVERRIDES (Furrow Compliance Docket)
+   PRINT / PDF EXPORT OVERRIDES (Vantage Clean Docket)
 ───────────────────────────────────────────────── */
 @media print {
   *,
